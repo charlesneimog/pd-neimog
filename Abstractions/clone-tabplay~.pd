@@ -1,0 +1,6 @@
+#N canvas 827 239 527 327 12;
+#X obj 97 62 inlet;
+#X obj 97 195 outlet~;
+#X obj 97 91 tabplay~;
+#X connect 0 0 2 0;
+#X connect 2 0 1 0;

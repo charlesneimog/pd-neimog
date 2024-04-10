@@ -1,0 +1,12 @@
+[submodule "Resources/pd.build"]
+	path = Resources/pd.build
+	url = https://github.com/charlesneimog/pd.build
+[submodule "Externals/pd-musesampler"]
+	path = Externals/pd-musesampler
+	url = https://github.com/charlesneimog/pd-musesampler
+[submodule "Externals/ambi_tilde"]
+	path = Externals/ambi_tilde
+	url = https://github.com/charlesneimog/ambi_tilde
+[submodule "Externals/pd-partialtrack"]
+	path = Externals/pd-partialtrack
+	url = https://github.com/charlesneimog/pd-partialtrack
