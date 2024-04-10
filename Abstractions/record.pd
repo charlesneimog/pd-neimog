@@ -1,0 +1,8 @@
+#N canvas 827 239 527 327 12;
+#X obj 9 400 writesf~;
+#X obj 304 158 nbx 11 47 -1e+37 1e+37 0 0 empty empty empty 0 -8 0 10 #e4e4e4 #373737 #373737 0 256;
+#X text 432 157 Count, f 7;
+#X listbox 305 95 17 0 0 1 Name - - 36;
+#X obj 9 7 inlet~;
+#X obj 202 371;
+#X connect 4 0 0 0;

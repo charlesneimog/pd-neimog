@@ -1,0 +1,11 @@
+#N canvas 827 239 527 327 12;
+#X declare -path pd-ckn;
+#X obj 16 9 declare -path pd-ckn;
+#X obj 16 39 midi-in;
+#X obj 16 273 else/sfont~;
+#X obj 16 355 dac~, f 8;
+#X obj 16 170 route keys;
+#X connect 1 0 4 0;
+#X connect 2 0 3 0;
+#X connect 2 1 3 1;
+#X connect 4 0 2 0;
