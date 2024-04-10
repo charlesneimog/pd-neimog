@@ -4,10 +4,6 @@ project(neimog)
 
 cmake_policy(SET CMP0077 NEW)
 
-#╭──────────────────────────────────────╮
-#│           Another objects            │
-#╰──────────────────────────────────────╯
-
 # ───────────── musesampler ─────────────
 set(MUSE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Externals/pd-musesampler)
 
@@ -34,11 +30,6 @@ endif()
 file(GLOB MuseSources ${MUSE_ROOT}/Sources/*.cpp)
 add_library(musesampler STATIC ${MuseSources})
 set_target_properties(musesampler PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-
-
-
-
 
 # ──────────────── ambi~ ────────────────
 set(AMBI_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Externals/ambi_tilde)
