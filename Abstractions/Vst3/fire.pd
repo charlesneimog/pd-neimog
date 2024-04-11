@@ -1,7 +1,0 @@
-#N canvas 6 31 951 1011 10;
-#X obj 46 54 osc~ 440;
-#X obj 46 199 dac~;
-#X obj 46 142 vstplugin~ -e Fire.vst3 1 1;
-#X connect 0 0 2 0;
-#X connect 2 0 1 0;
-#X connect 2 0 1 1;

@@ -66,12 +66,15 @@ set(PARTIAL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/Externals/pd-partialtracking)
 #╭──────────────────────────────────────╮
 #│           Library Sources            │
 #╰──────────────────────────────────────╯
+file(GLOB PD_NEIMOG "${CMAKE_CURRENT_SOURCE_DIR}/Sources/**/*.cpp") 
+list(APPEND PD_NEIMOG "${CMAKE_CURRENT_SOURCE_DIR}/Sources/neimog.cpp") 
+
 set_pd_external_path(${CMAKE_CURRENT_SOURCE_DIR}/)
-file(GLOB PD_NEIMOG ${CMAKE_CURRENT_SOURCE_DIR}/Sources/**/*.cpp)
 add_pd_external(neimog pd-neimog ${PD_NEIMOG})
 set_target_properties(neimog PROPERTIES CXX_STANDARD 20)
+add_definitions(-DNEIMOG_LIBRARY)
 
-target_link_libraries(neimog musesampler ambi)
+target_link_libraries(neimog musesampler ambi pd)
 
 
 

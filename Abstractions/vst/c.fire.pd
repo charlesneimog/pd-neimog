@@ -1,0 +1,14 @@
+#N canvas 6 31 951 1011 10;
+#X obj 46 142 vstplugin~ -e Fire.vst3 1 1;
+#X obj 133 18 click;
+#X obj 46 171 outlet~;
+#X obj 47 45 inlet~;
+#X obj 185 279 outlet;
+#X msg 133 85 vis 1;
+#X obj 131 55 t b;
+#X connect 0 0 2 0;
+#X connect 0 1 4 0;
+#X connect 1 0 6 0;
+#X connect 3 0 0 0;
+#X connect 5 0 0 0;
+#X connect 6 0 5 0;

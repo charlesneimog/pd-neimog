@@ -32,3 +32,4 @@
 *.app
 build
 pd-neimog.l_amd64
+.cache/clangd/index
