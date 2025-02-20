@@ -10,3 +10,9 @@
 [submodule "Externals/pd-partialtrack"]
 	path = Externals/pd-partialtrack
 	url = https://github.com/charlesneimog/pd-partialtrack
+[submodule "Sources/Follower/aubio"]
+	path = Sources/Follower/aubio
+	url = https://github.com/aubio/aubio.git
+[submodule "Resources/pd.cmake"]
+	path = Resources/pd.cmake
+	url = https://github.com/pure-data/pd.cmake

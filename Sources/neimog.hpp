@@ -25,8 +25,20 @@ extern "C" void ambi_tilde_setup(void);
 // ╰─────────────────────────────────────╯
 
 // ╭─────────────────────────────────────╮
+// │              Follower               │
+// ╰─────────────────────────────────────╯
+
+// ╭─────────────────────────────────────╮
+// │  Information Theory and Statistics  │
+// ╰─────────────────────────────────────╯
+
+void KlDivergenceSetup(void);
+void RenyiDivergenceSetup(void);
+
+// ╭─────────────────────────────────────╮
 // │           Library Objects           │
 // ╰─────────────────────────────────────╯
+
 class Neimog {
   public:
     Neimog(){};
