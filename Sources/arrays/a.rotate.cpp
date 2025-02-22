@@ -3,24 +3,24 @@
 #include <string>
 #include <vector>
 
-static t_class *PdArrayRotate;
+static t_class *neimog_arrayrotate;
 
 // ─────────────────────────────────────
-class ArrayRotate {
+class arrayrotate {
   public:
-    t_object Obj;
-    unsigned redrawAt;
-    unsigned redrawCount;
-    std::string arrayName;
+    t_object obj;
+    unsigned redrawat;
+    unsigned redrawcount;
+    std::string arrayname;
 };
 
-static void ArrayRedraw(ArrayRotate *x, t_float f) {
-    x->redrawAt = f;
+static void arrayrotate_redraw(arrayrotate *x, t_float f) {
+    x->redrawat = f;
     return;
 }
 
 // ─────────────────────────────────────
-static void Rotate(ArrayRotate *x, t_symbol *s, int argc, t_atom *argv) {
+static void arrayrotate_rotate(arrayrotate *x, t_symbol *s, int argc, t_atom *argv) {
 
     for (int i = 0; i < argc; i++) {
         if (argv[i].a_type != A_FLOAT) {
@@ -33,12 +33,12 @@ static void Rotate(ArrayRotate *x, t_symbol *s, int argc, t_atom *argv) {
     int vecsize;
     t_word *vec;
 
-    t_symbol *pd_symbol = gensym(x->arrayName.c_str());
+    t_symbol *pd_symbol = gensym(x->arrayname.c_str());
     if (!(array = (t_garray *)pd_findbyclass(pd_symbol, garray_class))) {
-        pd_error(x, "[Python] Array %s not found.", x->arrayName.c_str());
+        pd_error(x, "[Python] Array %s not found.", x->arrayname.c_str());
         return;
     } else if (!garray_getfloatwords(array, &vecsize, &vec)) {
-        pd_error(x, "[Python] Bad template for tabwrite '%s'.", x->arrayName.c_str());
+        pd_error(x, "[Python] Bad template for tabwrite '%s'.", x->arrayname.c_str());
         return;
     }
 
@@ -57,26 +57,26 @@ static void Rotate(ArrayRotate *x, t_symbol *s, int argc, t_atom *argv) {
         vec[index].w_float = atom_getfloat(argv + i);
     }
 
-    x->redrawCount++;
-    if (x->redrawCount >= x->redrawAt) {
+    x->redrawcount++;
+    if (x->redrawcount >= x->redrawat) {
         garray_redraw(array);
-        x->redrawCount = 0;
+        x->redrawcount = 0;
     }
     return;
 }
 
 // ─────────────────────────────────────
-static void *ArrayRotateNew(t_symbol *s) {
-    ArrayRotate *x = (ArrayRotate *)pd_new(PdArrayRotate);
-    x->arrayName = s->s_name;
+static void *arrayrotate_new(t_symbol *s) {
+    arrayrotate *x = (arrayrotate *)pd_new(neimog_arrayrotate);
+    x->arrayname = s->s_name;
     return (x);
 }
 
 // ─────────────────────────────────────
-void ArrayRotateSetup(void) {
-    PdArrayRotate = class_new(gensym("a.rotate"), (t_newmethod)ArrayRotateNew, 0,
-                              sizeof(ArrayRotate), 0, A_SYMBOL, 0);
+void arrayrotate_setup(void) {
+    neimog_arrayrotate = class_new(gensym("a.rotate"), (t_newmethod)arrayrotate_new, 0,
+                                   sizeof(arrayrotate), 0, A_SYMBOL, 0);
 
-    class_addlist(PdArrayRotate, (t_method)Rotate);
-    class_addmethod(PdArrayRotate, (t_method)ArrayRedraw, gensym("redraw"), A_FLOAT, 0);
+    class_addlist(neimog_arrayrotate, (t_method)arrayrotate_rotate);
+    class_addmethod(neimog_arrayrotate, (t_method)arrayrotate_redraw, gensym("redraw"), A_FLOAT, 0);
 }

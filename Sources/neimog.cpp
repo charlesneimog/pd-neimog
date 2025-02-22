@@ -7,8 +7,8 @@ extern "C" {
 static t_class *neimogLib;
 
 // ==============================================
-static void *neimogNew(void) {
-    Neimog *x = (Neimog *)pd_new(neimogLib);
+static void *neimog_new(void) {
+    neimog *x = (neimog *)pd_new(neimogLib);
     return (x);
 }
 
@@ -20,7 +20,7 @@ extern "C" void setup_pd0x2dneimog(void) {
         return;
     }
 
-    neimogLib = class_new(gensym("pd-neimog"), (t_newmethod)neimogNew, 0, sizeof(Neimog),
+    neimogLib = class_new(gensym("pd-neimog"), (t_newmethod)neimog_new, 0, sizeof(neimog),
                           CLASS_NOINLET, A_NULL, 0);
 
     // add to the search path
@@ -36,15 +36,16 @@ extern "C" void setup_pd0x2dneimog(void) {
 
     class_set_extern_dir(gensym(ExtPath.c_str()));
 
-    ArrayRotateSetup();
-    ArraySumSetup();
-    musesampler_tilde_setup();
-    ambi_tilde_setup();
+    // arrays
+    arrayrotate_setup();
+    arraysum_setup();
 
-    KlDivergenceSetup();
-    RenyiDivergenceSetup();
+    // statistics
+    kldivergence_setup();
+    renyi_setup();
+    euclidean_setup();
 
-    class_set_extern_dir(&s_);
+    // class_set_extern_dir(&s_);
 
     post("[pd-neimog] version %d.%d.%d", 0, 0, 1);
 }

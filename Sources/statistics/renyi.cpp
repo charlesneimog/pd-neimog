@@ -1,30 +1,16 @@
 #include <m_pd.h>
 #include <math.h>
 
-// ╭─────────────────────────────────────╮
-// │ Kullback-Leibler Divergence (KLD),  │
-// │       is a measure of how one       │
-// │  probability distribution differs   │
-// │      from a second, reference       │
-// │   probability distribution. It is   │
-// │ used extensively in fields such as  │
-// │   information theory, statistics,   │
-// │   and machine learning. For music   │
-// │   reference, check the thesis of    │
-// │   Arshia Cont, pages 141 and 142.   │
-// ╰─────────────────────────────────────╯
-
-static t_class *KlDivergence;
+static t_class *renyi_class;
 
 // ─────────────────────────────────────
-class KlObj {
+class renyi {
   public:
-    KlObj(){};
-    ~KlObj(){};
 
     t_object Obj;
     t_sample Sample;
-    t_float Beta;
+
+    float Alpha;
 
     bool RealTime;
     bool Normalize;
@@ -42,12 +28,12 @@ class KlObj {
 };
 
 // ─────────────────────────────────────
-static void KlObjBang(KlObj *x) {
-    t_float KLDiv = 0.0;
+static void renyi_bang(renyi *x) {
+    t_float RenyiDiv = 0.0;
     t_garray *Arr1 = (t_garray *)pd_findbyclass(x->P, garray_class);
     t_garray *Arr2 = (t_garray *)pd_findbyclass(x->Q, garray_class);
     if (!Arr1 || !Arr2) {
-        pd_error(x, "[divergence.kl] couldn't find some table");
+        pd_error(x, "[renyi] couldn't find some table");
         return;
     }
     t_word *Arr1Vec;
@@ -58,7 +44,7 @@ static void KlObjBang(KlObj *x) {
     int Arr2Size;
     garray_getfloatwords(Arr2, &Arr2Size, &Arr2Vec);
     if (Arr1Size != Arr2Size) {
-        pd_error(x, "[divergence.kl] tables must have the same size");
+        pd_error(x, "[renyi] tables must have the same size");
         return;
     }
     if (x->Normalize) {
@@ -78,29 +64,26 @@ static void KlObjBang(KlObj *x) {
         float IVec1 = Arr1Vec[i].w_float;
         float IVec2 = Arr2Vec[i].w_float;
         if (IVec1 > 0 && IVec2 > 0) {
-            // Equation 7.18 in Cont's thesis
-            KLDiv += IVec1 * log(IVec1 / IVec2); //- IVec1 + IVec2;
+            RenyiDiv += pow(IVec1, x->Alpha) * pow(IVec2, 1 - x->Alpha);
         }
     }
 
-    if (x->Exp) {
-        KLDiv = exp(-x->Beta * KLDiv); // Equation 7.19 in Cont's thesis
-    }
+    RenyiDiv = log(RenyiDiv) / (x->Alpha - 1.0);
 
     // Set the diversity value and output it
-    x->Diversity = KLDiv;
+    x->Diversity = RenyiDiv;
 
     outlet_float(x->Out, x->Diversity);
 }
 
 // ─────────────────────────────────────
-static void SetBeta(KlObj *x, t_floatarg f) { x->Beta = f; }
+static void renyi_alpha(renyi *x, t_floatarg f) { x->Alpha = f; }
 // ─────────────────────────────────────
-static void Expo(KlObj *x, t_floatarg f) { x->Exp = f; }
+static void renyi_expo(renyi *x, t_floatarg f) { x->Exp = f; }
 // ─────────────────────────────────────
-static void KlObjTick(KlObj *x) { outlet_float(x->Out, x->Diversity); }
+static void renyi_tick(renyi *x) { outlet_float(x->Out, x->Diversity); }
 // ─────────────────────────────────────
-static void Normalize(KlObj *x, t_floatarg f) {
+static void renyi_norm(renyi *x, t_floatarg f) {
     if (f == 1) {
         x->Normalize = true;
     } else {
@@ -110,8 +93,8 @@ static void Normalize(KlObj *x, t_floatarg f) {
 }
 
 // ─────────────────────────────────────
-static t_int *Perform(t_int *w) {
-    KlObj *x = (KlObj *)(w[1]);
+static t_int *renyi_perform(t_int *w) {
+    renyi *x = (renyi *)(w[1]);
     t_float *Arr1Vec = (t_float *)(w[2]);
     t_float *Arr2Vec = (t_float *)(w[3]);
     int n = (int)(w[4]);
@@ -129,7 +112,7 @@ static t_int *Perform(t_int *w) {
         return (w + 5);
     }
 
-    t_float KLDiv = 0.0;
+    t_float RenyiDiv = 0.0;
     if (x->Normalize) {
         float Sum1 = 0.0;
         float Sum2 = 0.0;
@@ -147,72 +130,59 @@ static t_int *Perform(t_int *w) {
         float IVec1 = Arr1Vec[i];
         float IVec2 = Arr2Vec[i];
         if (IVec1 > 0 && IVec2 > 0) {
-            KLDiv += IVec1 * log(IVec1 / IVec2); //- IVec1 + IVec2;
+            RenyiDiv += pow(IVec1, x->Alpha) * pow(IVec2, 1 - x->Alpha);
         }
     }
 
-    if (x->Exp) {
-        KLDiv = exp(-x->Beta * KLDiv);
-    }
+    RenyiDiv = log(RenyiDiv) / (x->Alpha - 1.0);
 
-    x->Diversity = KLDiv;
+    x->Diversity = RenyiDiv;
     clock_delay(x->Clock, 0);
 
     return (w + 5);
 }
 
 // ─────────────────────────────────────
-static void AddDsp(KlObj *x, t_signal **sp) {
+static void renyi_dsp(renyi *x, t_signal **sp) {
     if (x->RealTime) {
-        dsp_add(Perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
+        dsp_add(renyi_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
     }
 }
 
 // ─────────────────────────────────────
-static void *KlObjNew(t_symbol *s, int argc, t_atom *argv) {
-    KlObj *x = (KlObj *)pd_new(KlDivergence);
+static void *renyi_new(t_symbol *s, int argc, t_atom *argv) {
+    renyi *x = (renyi *)pd_new(renyi_class);
     bool isSinal = false;
-    if (s == gensym("kl~")) {
+    if (s == gensym("renyi~")) {
         isSinal = true;
     }
-    if (argc == 2 && !isSinal) {
+    if (argc == 2) {
         x->RealTime = false;
         if (argv[0].a_type != A_SYMBOL || argv[1].a_type != A_SYMBOL) {
-            pd_error(x, "[divergence.kl] arg1 and arg2 must be symbols");
+            pd_error(x, "[renyi~] arg1 and arg2 must be symbols");
             return NULL;
         }
         x->P = atom_getsymbol(argv);
         x->Q = atom_getsymbol(argv + 1);
-    } else if (argc == 0 && isSinal) {
+    } else {
         x->RealTime = true;
         x->In2 = inlet_new(&x->Obj, &x->Obj.ob_pd, &s_signal, &s_signal);
-        x->Clock = clock_new(x, (t_method)KlObjTick);
-    } else {
-        pd_error(x, "[divergence.kl] wrong number of args");
-        return nullptr;
+        x->Clock = clock_new(x, (t_method)renyi_tick);
     }
     x->Out = outlet_new(&x->Obj, &s_anything);
-    x->Beta = 1.0;
+    x->Alpha = 1.0;
     return (x);
 }
 
-static void *KlObjFree(KlObj *x) {
-    if (x->RealTime) {
-        inlet_free(x->In2);
-        clock_free(x->Clock);
-    }
-    return (void *)x;
-}
-
 // ─────────────────────────────────────
-void KlDivergenceSetup(void) {
-    KlDivergence = class_new(gensym("kl"), (t_newmethod)KlObjNew, (t_method)KlObjFree,
-                             sizeof(KlObj), 0, A_GIMME, 0);
-    class_addcreator((t_newmethod)KlObjNew, gensym("kl~"), A_GIMME, 0);
-    CLASS_MAINSIGNALIN(KlDivergence, KlObj, Sample);
-    class_addmethod(KlDivergence, (t_method)AddDsp, gensym("dsp"), A_CANT, 0);
-    class_addmethod(KlDivergence, (t_method)Normalize, gensym("norm"), A_FLOAT, 0);
-    class_addmethod(KlDivergence, (t_method)SetBeta, gensym("beta"), A_FLOAT, 0);
-    class_addmethod(KlDivergence, (t_method)Expo, gensym("exp"), A_FLOAT, 0);
-    class_addbang(KlDivergence, KlObjBang);
+void renyi_setup(void) {
+    renyi_class =
+        class_new(gensym("renyi"), (t_newmethod)renyi_new, 0, sizeof(renyi), 0, A_GIMME, 0);
+    class_addcreator((t_newmethod)renyi_new, gensym("renyi~"), A_GIMME, 0);
+    CLASS_MAINSIGNALIN(renyi_class, renyi, Sample);
+    class_addmethod(renyi_class, (t_method)renyi_dsp, gensym("dsp"), A_CANT, 0);
+    class_addmethod(renyi_class, (t_method)renyi_norm, gensym("norm"), A_FLOAT, 0);
+    class_addmethod(renyi_class, (t_method)renyi_alpha, gensym("alpha"), A_FLOAT, 0);
+    class_addmethod(renyi_class, (t_method)renyi_expo, gensym("exp"), A_FLOAT, 0);
+    class_addbang(renyi_class, renyi_bang);
 }

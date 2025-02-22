@@ -7,8 +7,8 @@
 // ╭─────────────────────────────────────╮
 // │            Array Objects            │
 // ╰─────────────────────────────────────╯
-void ArrayRotateSetup(void);
-void ArraySumSetup(void);
+void arrayrotate_setup(void);
+void arraysum_setup(void);
 
 // ╭─────────────────────────────────────╮
 // │               Samples               │
@@ -32,16 +32,17 @@ extern "C" void ambi_tilde_setup(void);
 // │  Information Theory and Statistics  │
 // ╰─────────────────────────────────────╯
 
-void KlDivergenceSetup(void);
-void RenyiDivergenceSetup(void);
+void kldivergence_setup(void);
+void euclidean_setup(void);
+void renyi_setup(void);
 
 // ╭─────────────────────────────────────╮
 // │           Library Objects           │
 // ╰─────────────────────────────────────╯
 
-class Neimog {
+class neimog {
   public:
-    Neimog(){};
+    neimog(){};
 
     t_object Obj;
 
