@@ -6,11 +6,11 @@
 static t_class *Euclidean;
 
 // ─────────────────────────────────────
-class EuclideanObj {
+class EntropyObj {
   public:
-    EuclideanObj() {};
+    EntropyObj() {};
 
-    t_object Obj;
+    t_object obj;
     t_sample Sample;
 
     float Alpha;
@@ -24,7 +24,7 @@ class EuclideanObj {
     t_clock *Clock;
 
     t_inlet *In2;
-    t_outlet *Out;
+    t_outlet *out;
 
     t_symbol *Q;
     t_symbol *P;
@@ -33,7 +33,7 @@ class EuclideanObj {
 };
 
 // ─────────────────────────────────────
-static void euclidean_bang(EuclideanObj *x) {
+static void euclidean_bang(EntropyObj *x) {
     t_float RenyiDiv = 0.0;
     t_garray *Arr1 = (t_garray *)pd_findbyclass(x->P, garray_class);
     t_garray *Arr2 = (t_garray *)pd_findbyclass(x->Q, garray_class);
@@ -78,11 +78,11 @@ static void euclidean_bang(EuclideanObj *x) {
     // Set the diversity value and output it
     x->distance = RenyiDiv;
 
-    outlet_float(x->Out, x->distance);
+    outlet_float(x->out, x->distance);
 }
 
 // ─────────────────────────────────────
-static void euclidean_list(EuclideanObj *x, t_symbol *s, int argc, t_atom *argv) {
+static void euclidean_list(EntropyObj *x, t_symbol *s, int argc, t_atom *argv) {
     t_float distance = 0.0;
     int size = x->array1.size();
     if (size != argc) {
@@ -102,11 +102,11 @@ static void euclidean_list(EuclideanObj *x, t_symbol *s, int argc, t_atom *argv)
     t_float normalized_distance = euclidean_distance / sqrt(argc);
 
     x->distance = normalized_distance;
-    outlet_float(x->Out, normalized_distance);
+    outlet_float(x->out, normalized_distance);
 }
 
 // ─────────────────────────────────────
-static void euclidean_storelist(EuclideanObj *x, t_symbol *s, int argc, t_atom *argv) {
+static void euclidean_storelist(EntropyObj *x, t_symbol *s, int argc, t_atom *argv) {
     x->array1.clear();
     for (int i = 0; i < argc; i++) {
         x->array1.push_back(atom_getfloat(argv + i));
@@ -115,12 +115,12 @@ static void euclidean_storelist(EuclideanObj *x, t_symbol *s, int argc, t_atom *
 }
 
 // ─────────────────────────────────────
-static void euclidean_tick(EuclideanObj *x) {
+static void euclidean_tick(EntropyObj *x) {
     //
     // outlet_float(x->Out, x->distance);
 }
 // ─────────────────────────────────────
-static void euclidean_norm(EuclideanObj *x, t_floatarg f) {
+static void euclidean_norm(EntropyObj *x, t_floatarg f) {
     if (f == 1) {
         x->Normalize = true;
     } else {
@@ -131,7 +131,7 @@ static void euclidean_norm(EuclideanObj *x, t_floatarg f) {
 
 // ─────────────────────────────────────
 static t_int *euclidean_perform(t_int *w) {
-    EuclideanObj *x = (EuclideanObj *)(w[1]);
+    EntropyObj *x = (EntropyObj *)(w[1]);
     t_float *Arr1Vec = (t_float *)(w[2]);
     t_float *Arr2Vec = (t_float *)(w[3]);
     int n = (int)(w[4]);
@@ -150,7 +150,7 @@ static t_int *euclidean_perform(t_int *w) {
 }
 
 // ─────────────────────────────────────
-static void euclidean_dsp(EuclideanObj *x, t_signal **sp) {
+static void euclidean_dsp(EntropyObj *x, t_signal **sp) {
     if (x->RealTime) {
         dsp_add(euclidean_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
     }
@@ -158,25 +158,25 @@ static void euclidean_dsp(EuclideanObj *x, t_signal **sp) {
 
 // ─────────────────────────────────────
 static void *euclidean_new(t_symbol *s, int argc, t_atom *argv) {
-    EuclideanObj *x = (EuclideanObj *)pd_new(Euclidean);
+    EntropyObj *x = (EntropyObj *)pd_new(Euclidean);
     bool isSinal = false;
     std::string method = "euclidean~";
     if (s->s_name == method) {
         x->RealTime = true;
     } else {
         x->RealTime = false;
-        x->In2 = inlet_new(&x->Obj, &x->Obj.ob_pd, &s_list, gensym("_storelist"));
+        x->In2 = inlet_new(&x->obj, &x->obj.ob_pd, &s_list, gensym("_storelist"));
     }
-    x->Out = outlet_new(&x->Obj, &s_anything);
+    x->out = outlet_new(&x->obj, &s_anything);
     return (x);
 }
 
 // ─────────────────────────────────────
 void euclidean_setup(void) {
-    Euclidean = class_new(gensym("euclidean"), (t_newmethod)euclidean_new, 0, sizeof(EuclideanObj),
+    Euclidean = class_new(gensym("euclidean"), (t_newmethod)euclidean_new, 0, sizeof(EntropyObj),
                           0, A_GIMME, 0);
     class_addcreator((t_newmethod)euclidean_new, gensym("euclidean~"), A_GIMME, 0);
-    CLASS_MAINSIGNALIN(Euclidean, EuclideanObj, Sample);
+    CLASS_MAINSIGNALIN(Euclidean, EntropyObj, Sample);
     class_addmethod(Euclidean, (t_method)euclidean_dsp, gensym("dsp"), A_CANT, 0);
     class_addmethod(Euclidean, (t_method)euclidean_norm, gensym("norm"), A_FLOAT, 0);
     class_addmethod(Euclidean, (t_method)euclidean_storelist, gensym("_storelist"), A_GIMME, 0);

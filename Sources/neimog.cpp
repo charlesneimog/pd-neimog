@@ -31,21 +31,37 @@ extern "C" void setup_pd0x2dneimog(void) {
     STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, AbsPath.c_str(), 0);
     STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, AudiosPath.c_str(), 0);
 
+    std::string upic= libPath + "/lua/upic/";
+    STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, upic.c_str(), 0);
+
     std::string ExtPath = neimogLib->c_externdir->s_name;
     ExtPath += "/Help-Patches/";
 
-    class_set_extern_dir(gensym(ExtPath.c_str()));
+    // Lua Library
+    t_canvas *cnv = canvas_getcurrent();
+    int result = sys_load_lib(cnv, "pdlua");
+    if (!result){
+        pd_error(nullptr, "[pd-neimog] pdlua not installed, some objects will not work!");
+    }
 
+    // Load Externals
+    class_set_extern_dir(gensym(ExtPath.c_str()));
     // arrays
     arrayrotate_setup();
     arraysum_setup();
-
     // statistics
     kldivergence_setup();
     renyi_setup();
     euclidean_setup();
+    entropy_setup();
+    kalman_setup();
+    // manipulations
+    transposer_tilde_setup();
+    // mir
+    bock_tilde_setup();
+    nonset_tilde_setup();
 
-    // class_set_extern_dir(&s_);
-
+    // reset external
+    class_set_extern_dir(&s_);
     post("[pd-neimog] version %d.%d.%d", 0, 0, 1);
 }
