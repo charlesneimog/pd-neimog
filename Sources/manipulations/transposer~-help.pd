@@ -6,7 +6,7 @@
 #X obj 28 268 dac~;
 #X obj 87 245 print~;
 #X obj 128 193 bng 18 250 50 0 empty empty empty 0 -9 0 10 #fcfcfc #000000 #000000;
-#X msg 127 124 freqshift 400;
+#X msg 127 124 freqshift 200;
 #X connect 0 0 4 0;
 #X connect 0 0 3 0;
 #X connect 2 0 0 0;

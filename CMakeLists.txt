@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 include(${CMAKE_CURRENT_SOURCE_DIR}/Resources/pd.cmake/pd.cmake) # pd.build
-project(pd-neimog)
+project(neimog)
 
 #╭──────────────────────────────────────╮
 #│                FFTW3                 │
@@ -48,6 +48,7 @@ file(GLOB mir_source ${CMAKE_CURRENT_SOURCE_DIR}/Sources/mir/*.cpp)
 add_library(mir STATIC ${mir_source})
 set_target_properties(mir PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(mir PUBLIC fftw3)
+add_subdirectory(Sources/mir/onsetsds~)
 
 # ╭──────────────────────────────────────╮
 # │           Library Sources            │
@@ -56,15 +57,16 @@ list(APPEND PD_NEIMOG "${CMAKE_CURRENT_SOURCE_DIR}/Sources/neimog.cpp")
 file(GLOB NEIMOG_ABS ${CMAKE_CURRENT_SOURCE_DIR}/Abstractions/*)
 file(GLOB NEIMOG_HELP ${CMAKE_CURRENT_SOURCE_DIR}/Help-Patches/*)
 file(GLOB NEIMOG_LUA ${CMAKE_CURRENT_SOURCE_DIR}/Sources/lua/*.pd_lua)
+file(GLOB NEIMOG_LUA "${NEIMOG_LUA};${CMAKE_CURRENT_SOURCE_DIR}/Sources/lua/*.pd_lua")
 
-pd_add_external(pd-neimog ${PD_NEIMOG})
-pd_add_datafile(pd-neimog "${NEIMOG_ABS}")
-pd_add_datafile(pd-neimog "${NEIMOG_HELP}")
-pd_add_datafile(pd-neimog "${CMAKE_CURRENT_SOURCE_DIR}/Sources/lua" DESTINATION "lua")
-pd_add_datafile(pd-neimog ${NEIMOG_LUA} DESTINATION "lua")
+pd_add_external(neimog ${PD_NEIMOG})
+pd_add_datafile(neimog "${NEIMOG_ABS}")
+pd_add_datafile(neimog "${NEIMOG_HELP}")
+pd_add_datafile(neimog "${CMAKE_CURRENT_SOURCE_DIR}/Sources/lua" DESTINATION "lua")
+pd_add_datafile(neimog ${NEIMOG_LUA} DESTINATION "lua")
 
-target_link_libraries(pd-neimog statistics arrays manipulations mir)
-set_target_properties(pd-neimog PROPERTIES CXX_STANDARD 20)
+target_link_libraries(neimog statistics arrays manipulations mir)
+set_target_properties(neimog PROPERTIES CXX_STANDARD 20)
 
 
 

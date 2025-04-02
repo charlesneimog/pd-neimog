@@ -39,6 +39,8 @@ void kalman_setup(void);
 // ╰─────────────────────────────────────╯
 void bock_tilde_setup(void);
 void nonset_tilde_setup(void);
+void onsetsds_tilde_setup(void);
+
 
 // ╭─────────────────────────────────────╮
 // │           Library Objects           │

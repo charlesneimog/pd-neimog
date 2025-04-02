@@ -1,4 +1,5 @@
 #include "neimog.hpp"
+#include <vector>
 
 extern "C" {
 #include <s_stuff.h>
@@ -13,14 +14,14 @@ static void *neimog_new(void) {
 }
 
 // ==============================================
-extern "C" void setup_pd0x2dneimog(void) {
+extern "C" void neimog_setup(void) {
     int major, minor, micro;
     sys_getversion(&major, &minor, &micro);
     if (major < 0 && minor < 54) {
         return;
     }
 
-    neimogLib = class_new(gensym("pd-neimog"), (t_newmethod)neimog_new, 0, sizeof(neimog),
+    neimogLib = class_new(gensym("neimog"), (t_newmethod)neimog_new, 0, sizeof(neimog),
                           CLASS_NOINLET, A_NULL, 0);
 
     // add to the search path
@@ -39,9 +40,12 @@ extern "C" void setup_pd0x2dneimog(void) {
 
     // Lua Library
     t_canvas *cnv = canvas_getcurrent();
-    int result = sys_load_lib(cnv, "pdlua");
-    if (!result){
-        pd_error(nullptr, "[pd-neimog] pdlua not installed, some objects will not work!");
+    std::vector<std::string> requiredLibs = {"pdlua"};
+    for (auto &lib : requiredLibs) {
+        int result = sys_load_lib(cnv, lib.c_str());
+        if (!result) {
+            pd_error(nullptr, "[pd-neimog] %s not installed, some objects will not work!", lib.c_str());
+        }
     }
 
     // Load Externals
@@ -57,9 +61,11 @@ extern "C" void setup_pd0x2dneimog(void) {
     kalman_setup();
     // manipulations
     transposer_tilde_setup();
+
     // mir
     bock_tilde_setup();
     nonset_tilde_setup();
+    onsetsds_tilde_setup();
 
     // reset external
     class_set_extern_dir(&s_);
