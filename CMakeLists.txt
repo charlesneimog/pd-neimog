@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 include(${CMAKE_CURRENT_SOURCE_DIR}/Resources/pd.cmake/pd.cmake) # pd.build
 project(neimog)
+set(DCMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 #╭──────────────────────────────────────╮
 #│                FFTW3                 │
