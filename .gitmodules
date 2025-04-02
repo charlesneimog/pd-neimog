@@ -16,3 +16,9 @@
 [submodule "Resources/pd.cmake"]
 	path = Resources/pd.cmake
 	url = https://github.com/pure-data/pd.cmake
+[submodule "Sources/lua/pd-upic"]
+	path = Sources/lua/pd-upic
+	url = https://github.com/charlesneimog/pd-upic
+[submodule "Sources/lua/pd-orchidea"]
+	path = Sources/lua/pd-orchidea
+	url = https://github.com/charlesneimog/pd-orchidea

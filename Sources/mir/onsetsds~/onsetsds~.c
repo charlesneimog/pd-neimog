@@ -1,18 +1,15 @@
 #include "onsetsds.h"
 #include <m_pd.h>
 #include <math.h>
-#include <stdio.h>
-
-EXTERN void mayer_fft(int n, t_sample *real, t_sample *imag);
 
 static t_class *onsetsds_tilde_class;
 
+// ─────────────────────────────────────
 typedef struct _onsetsds_tilde {
     t_object x_obj;
     t_sample x_sample;
     t_clock *clock;
 
-    // Buffers para FFT (substituindo fftw)
     t_sample *x_fft_in;
     t_sample *x_fft_imag;
 
@@ -36,10 +33,20 @@ typedef struct _onsetsds_tilde {
 static void onsetsds_tilde_restart(t_onsetsds_tilde *x) {
     freebytes(x->ods_data, onsetsds_memneeded(x->onset_type, x->fftsize, 10));
     freebytes(x->ODS, sizeof(OnsetsDS));
+
     x->ods_data = (float *)getbytes(onsetsds_memneeded(x->onset_type, x->fftsize, 10));
     x->ODS = (OnsetsDS *)getbytes(sizeof(OnsetsDS));
     onsetsds_init(x->ODS, x->ods_data, ODS_FFT_FFTW3_R2C, x->onset_type, x->fftsize, 10,
                   sys_getsr());
+    x->x_fft_in = (t_sample *)getbytes(x->fftsize * sizeof(t_sample));
+    x->x_fft_imag = (t_sample *)getbytes(x->fftsize * sizeof(t_sample));
+    memset(x->x_fft_in, 0, x->fftsize * sizeof(t_sample));
+    memset(x->x_fft_imag, 0, x->fftsize * sizeof(t_sample));
+
+    x->x_window = (t_sample *)getbytes(x->fftsize * sizeof(t_sample));
+    for (int i = 0; i < x->fftsize; i++) {
+        x->x_window[i] = 0.5f * (1.0f - cosf(2.0f * M_PI * i / (x->fftsize - 1)));
+    }
 }
 
 // ─────────────────────────────────────
@@ -49,7 +56,10 @@ static void onsetsds_tilde_set(t_onsetsds_tilde *x, t_symbol *s, int argc, t_ato
         onsetsds_setrelax(x->ODS, atom_getfloat(argv + 1), x->fftsize);
     } else if (strcmp(method, "floor") == 0) {
         x->ODS->floor = atom_getfloat(argv + 1);
-        logpost(x, 3, "Floor threshold: %f", x->ODS->floor);
+        logpost(x, 3, "Floor: %f", x->ODS->floor);
+    } else if (strcmp(method, "threshold") == 0) {
+        x->ODS->thresh = atom_getfloat(argv + 1);
+        logpost(x, 3, "Threshold: %f", x->ODS->thresh);
     } else if (strcmp(method, "method") == 0) {
         x->onset_type = atom_getint(argv + 1) - 1;
         if (x->onset_type < 0 || x->onset_type > 6) {
@@ -63,7 +73,6 @@ static void onsetsds_tilde_set(t_onsetsds_tilde *x, t_symbol *s, int argc, t_ato
             pd_error(x, "  7: Modified Kullback-Liebler deviation (default)");
             return;
         }
-
         onsetsds_tilde_restart(x);
     } else if (strcmp(method, "whtype") == 0) {
         int wh_type = atom_getint(argv + 1);
@@ -75,6 +84,10 @@ static void onsetsds_tilde_set(t_onsetsds_tilde *x, t_symbol *s, int argc, t_ato
             pd_error(x, "  0: None");
             pd_error(x, "  1: Adaptive max 1");
         }
+    } else if (strcmp(method, "fftsize") == 0) {
+        // x->fftsize=atom_getint(argv+1);
+        // onsetsds_tilde_restart(x);
+    } else if (strcmp(method, "whtype") == 0) {
     } else {
         pd_error(x, "Unknown method");
     }
@@ -150,6 +163,7 @@ static void *onsetsds_tilde_new(t_symbol *s, int argc, t_atom *argv) {
     logpost(x, 3, "Relax threshold: %f", x->ODS->relaxtime);
     logpost(x, 3, "Floor threshold: %f", x->ODS->floor);
     logpost(x, 3, "Median span: %i", x->ODS->medspan);
+    logpost(x, 3, "threshold : %f", (float)x->ODS->thresh);
     logpost(x, 3, "FFT size: %f", (float)x->fftsize);
 
     x->x_fft_in = (t_sample *)getbytes(x->fftsize * sizeof(t_sample));

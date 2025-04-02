@@ -28,12 +28,21 @@ extern "C" void neimog_setup(void) {
     std::string libPath = neimogLib->c_externdir->s_name;
     std::string AbsPath = libPath + "/Abstractions/";
     std::string AudiosPath = libPath + "/Resources/Audios/";
+    std::string sf = libPath + "/sf/";
+    std::string vst = libPath + "/sf/";
+    std::string lua = libPath + "/lua/";
+
+    STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, sf.c_str(), 0);
+    STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, vst.c_str(), 0);
     STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, libPath.c_str(), 0);
     STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, AbsPath.c_str(), 0);
     STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, AudiosPath.c_str(), 0);
 
-    std::string upic= libPath + "/lua/upic/";
-    STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, upic.c_str(), 0);
+    const char *lualibs[] = {"pd-upic", "pd-orchidea"};
+    for (auto &lib : lualibs) {
+        std::string lualib = libPath + "/lua/" + lib;
+        STUFF->st_searchpath = namelist_append(STUFF->st_searchpath, lualib.c_str(), 0);
+    }
 
     std::string ExtPath = neimogLib->c_externdir->s_name;
     ExtPath += "/Help-Patches/";
@@ -44,7 +53,8 @@ extern "C" void neimog_setup(void) {
     for (auto &lib : requiredLibs) {
         int result = sys_load_lib(cnv, lib.c_str());
         if (!result) {
-            pd_error(nullptr, "[pd-neimog] %s not installed, some objects will not work!", lib.c_str());
+            pd_error(nullptr, "[pd-neimog] %s not installed, some objects will not work!",
+                     lib.c_str());
         }
     }
 
@@ -53,6 +63,8 @@ extern "C" void neimog_setup(void) {
     // arrays
     arrayrotate_setup();
     arraysum_setup();
+    arrayappend_setup();
+
     // statistics
     kldivergence_setup();
     renyi_setup();
