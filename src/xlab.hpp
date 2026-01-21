@@ -1,6 +1,12 @@
+#include <string>
+#include <vector>
+
 #include <m_pd.h>
 
+extern "C" {
 #include <m_imp.h>
+#include <s_stuff.h>
+}
 
 void arrayrotate_setup(void);
 void arraysum_setup(void);
@@ -11,6 +17,8 @@ void renyi_setup(void);
 void euclidean_setup(void);
 void entropy_setup(void);
 void kalman_setup(void);
+
+extern "C" void pdlua_setup(void);
 
 // ╭─────────────────────────────────────╮
 // │                UTILS                │
