@@ -7,6 +7,9 @@ set(PD_BUILD_STATIC_OBJECTS OFF)
 set(POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+
+option(IAMCHARLES "Set to ON if you are me, this use local packages" OFF)
+
 # ╭──────────────────────────────────────╮
 # │                FLAGS                 │
 # ╰──────────────────────────────────────╯
@@ -22,11 +25,15 @@ set(PDCMAKE_FILE ${CMAKE_BINARY_DIR}/pd.cmake)
 set(PDCMAKE_VERSION "v0.2.11")
 if(NOT EXISTS ${PDCMAKE_FILE})
     message(STATUS "Downloading pd.cmake")
-    file(DOWNLOAD 
-    https://github.com/pure-data/pd.cmake/releases/download/v2.0.11/pd.cmake ${PDCMAKE_FILE} 
-    STATUS DOWNLOAD_STATUS)
+    file(DOWNLOAD
+         # https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake 
+         https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake
+         ${PDCMAKE_FILE} STATUS DOWNLOAD_STATUS)
+
 endif()
 include(${PDCMAKE_FILE})
+
+set(PD_OUTPUT_PATH "${PDLIBDIR}/" CACHE PATH "Output directory for Pd externals")
 
 # ╭──────────────────────────────────────╮
 # │                 CPM                  │
@@ -107,30 +114,48 @@ set_target_properties(utilities PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # main object
 pd_add_external(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/xlab.cpp")
-file(GLOB XLAB_FILES "${CMAKE_BINARY_DIR}/${PROJECT_NAME}/*")
-pd_add_datafile(xlab "${XLAB_FILES}")
 
 # ╭──────────────────────────────────────╮
 # │         Externals Libraries          │
 # ╰──────────────────────────────────────╯
-set(PD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/xlab")
-cpmaddpackage("gh:charlesneimog/pd-ambi#main")
-cpmaddpackage("gh:charlesneimog/pv_tilde#main")
-cpmaddpackage("gh:charlesneimog/mar_tilde#main")
-cpmaddpackage("gh:charlesneimog/pd-stk#main")
 
-# lua
-cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#54e941ff901473986a5e4ce1197c0dbc0d96e3ed")
-cpmaddpackage("gh:charlesneimog/pd-upic#main")
-cpmaddpackage("gh:charlesneimog/pd-orchidea#main")
-cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-bhack#main")
+if(IAMCHARLES)
+    add_subdirectory(../pd-ambi ${CMAKE_BINARY_DIR}/pd-ambi)
+    add_subdirectory(../pv~ ${CMAKE_BINARY_DIR}/pv~)
+    add_subdirectory(../mar_tilde ${CMAKE_BINARY_DIR}/mar_tilde)
+    add_subdirectory(../pd-stk ${CMAKE_BINARY_DIR}/pd-stk)
 
-# single objects
-cpmaddpackage("gh:charlesneimog/pd-onnx#main")
-cpmaddpackage("gh:charlesneimog/onsetsds_tilde#v0.1.0")
+    add_subdirectory(../pd-lua ${CMAKE_BINARY_DIR}/pd-lua)
+    add_subdirectory(../py4pd ${CMAKE_BINARY_DIR}/py4pd)
+    add_subdirectory(../pd-upic ${CMAKE_BINARY_DIR}/pd-upic)
+    add_subdirectory(../pd-orchidea ${CMAKE_BINARY_DIR}/pd-orchidea)
+    add_subdirectory(../pd-bhack ${CMAKE_BINARY_DIR}/pd-bhack)
 
-# saf
-cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-saf#main")
+    add_subdirectory(../pd-onnx ${CMAKE_BINARY_DIR}/pd-onnx)
+    add_subdirectory(../onsetsds_tilde ${CMAKE_BINARY_DIR}/onsetsds_tilde)
+    add_subdirectory(../dragonfly_tilde ${CMAKE_BINARY_DIR}/dragonfly_tilde)
+
+    add_subdirectory(../pd-saf ${CMAKE_BINARY_DIR}/pd-saf)
+else()
+    cpmaddpackage("gh:charlesneimog/pd-ambi#main")
+    cpmaddpackage("gh:charlesneimog/pv_tilde#main")
+    cpmaddpackage("gh:charlesneimog/mar_tilde#main")
+    cpmaddpackage("gh:charlesneimog/pd-stk#main")
+    cpmaddpackage("gh:charlesneimog/py4pd#master")
+
+    # lua
+    cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#54e941ff901473986a5e4ce1197c0dbc0d96e3ed")
+    cpmaddpackage("gh:charlesneimog/pd-upic#main")
+    cpmaddpackage("gh:charlesneimog/pd-orchidea#main")
+    cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-bhack#main")
+
+    # single objects
+    cpmaddpackage("gh:charlesneimog/pd-onnx#main")
+    cpmaddpackage("gh:charlesneimog/onsetsds_tilde#v0.1.0")
+
+    # saf
+    cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-saf#main")
+endif()
 
 target_link_libraries(xlab PRIVATE utilities manipulations arrays statistics pdlua)
 
@@ -139,14 +164,13 @@ target_link_libraries(xlab PRIVATE utilities manipulations arrays statistics pdl
 # ╰──────────────────────────────────────╯
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-add_custom_target(edit_files
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/resources/edit_patches.py ${CMAKE_BINARY_DIR}/xlab
-
-    COMMENT "Editing generated files with Python"
-)
+add_custom_target(
+    edit_files
+    # COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/resources/edit_patches.py ${CMAKE_BINARY_DIR}/xlab
+    COMMENT "Editing generated files with Python")
 
 add_dependencies(
-    edit_files
+    edit_files # target
 
     # lua
     upic
@@ -158,13 +182,14 @@ add_dependencies(
     pv_tilde
     mar_tilde
     onsetsds_tilde
+    py4pd
 
     # saf
-    saf.encoder_tilde
-    saf.decoder_tilde
-    saf.binaural_tilde
-    saf.roomsim_tilde
-    saf.panner_tilde
+    # saf.encoder_tilde
+    # saf.decoder_tilde
+    # saf.binaural_tilde
+    # saf.roomsim_tilde
+    # saf.panner_tilde
 )
 
 add_dependencies(xlab edit_files)
