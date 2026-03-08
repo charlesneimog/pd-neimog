@@ -1,16 +1,22 @@
 ---
 name: Compile PureData Object
 on:
-  workflow_dispatch:
-    inputs:
-      publish_release:
-        description: Publish a GitHub Release using LIBVERSION after build
-        required: false
-        type: boolean
-        default: false
+  push:
+    branches: [main]
+#╭──────────────────────────────────────╮
+#│  Uncomment if you want to trigger a  │
+#│               release                │
+#╰──────────────────────────────────────╯
+  # workflow_dispatch:
+  #   inputs:
+  #     publish_release:
+  #       description: Publish a GitHub Release using LIBVERSION after build
+  #       required: false
+  #       type: boolean
+  #       default: false
 env:
-  LIBNAME: neimog
-  LIBVERSION: "0.1.0"
+  LIBNAME: xlab
+  LIBVERSION: 0.1.0
   PYVERSION: "3.13"
 permissions:
   contents: write
@@ -20,7 +26,7 @@ jobs:
     strategy:
       matrix:
         precision: [32, 64]
-        machines: [macos-15-intel, macos-latest]
+        machines: [macos-latest]
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -34,24 +40,24 @@ jobs:
           brew install pd
       - name: Build
         run: |
-          cmake . -B build -DPDLIBDIR=./ -DCMAKE_BUILD_TYPE=Release -DPYVERSION=${{env.PYVERSION}}
-          cmake --build build --parallel $(sysctl -n hw.ncpu)
+          cmake . -B build -DPD_LIB_DIR=${{ github.workspace }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DPD_FLOATSIZE=${{ matrix.precision }} -DPYVERSION=${{env.PYVERSION}}
+          cmake --build build -j4
           cmake --install build
-      - name: Upload ONNX Folder
+      - name: Upload Object
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-${{matrix.machines}}-pd${{matrix.precision}}
+          name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-${{matrix.machines}}-universal-pd${{matrix.precision}}
           path: ${{env.LIBNAME}}
   linux-build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64]
+        arch: [amd64] #, arm, aarch64]
         precision: [32, 64]
     steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{env.PYVERSION}}
+          python-version: 3.13
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -62,20 +68,41 @@ jobs:
           sudo add-apt-repository ppa:pure-data/pure-data -y
           sudo apt install puredata -y
           sudo apt install libpipewire-0.3-dev -y
-          sudo apt install libfreetype6-dev libx11-dev libxext-dev libxinerama-dev libxcursor-dev libxrandr-dev libxcomposite-dev libglib2.0-dev libgtk-3-dev libasound2-dev libpulse-dev libcurl4-openssl-dev libssl-dev libfftw3-dev libsndfile1-dev libsqlite3-dev -y
-
-      - name: Configure
-        if: matrix.arch == 'amd64'
+          sudo apt install libfreetype6-dev libx11-dev libxext-dev libxinerama-dev libxcursor-dev libxrandr-dev libxcomposite-dev libglib2.0-dev libgtk-3-dev libasound2-dev libpulse-dev libcurl4-openssl-dev libssl-dev libfftw3-dev libsndfile1-dev libsqlite3-dev libz-dev -y
+      - name: Install compiler
+        id: compiler
         run: |
-          cmake . -B build -DPD_FLOATSIZE=${{ matrix.precision }} -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} -DPDLIBDIR=./ -DCMAKE_BUILD_TYPE=Release -DPYVERSION=${{env.PYVERSION}}
+          arch=""
+          test "${{ matrix.arch }}" != "aarch64" || arch="aarch64-linux-gnu"
+          test "${{ matrix.arch }}" != "arm" || arch="arm-linux-gnueabihf"
+          if test -n "${arch}"; then
+            sudo apt-get install -y gcc-${arch} g++-${arch}
+            echo "arch=${arch}" >> $GITHUB_OUTPUT
+          fi
+      - name: Configure
+        run: |
+          arch="${{ steps.compiler.outputs.arch }}"
+          openblas_target=""
+          case "${{ matrix.arch }}" in
+            aarch64) openblas_target="ARMV8" ;;
+            arm) openblas_target="ARMV7" ;;
+          esac
+          cmake . -B build \
+            -DPD_FLOATSIZE=${{ matrix.precision }} \
+            -DPD_LIB_DIR=${{ github.workspace }} \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPYVERSION=${{ env.PYVERSION }} \
+            ${arch:+-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }}} \
+            ${arch:+-DCMAKE_C_COMPILER=${arch}-gcc -DCMAKE_CXX_COMPILER=${arch}-g++} \
+            ${arch:+${openblas_target:+-DTARGET=${openblas_target}}}
       - name: Build Object
         run: |
-          cmake --build build -j$(nproc)
+          cmake --build build -- -j$(nproc)
           cmake --install build
       - name: Upload Object
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-linux-${{matrix.arch}}-pd${{matrix.precision}}
+          name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-ubuntu-latest-${{matrix.arch}}-pd${{matrix.precision}}
           path: ${{env.LIBNAME}}
   windows-build:
     runs-on: windows-latest
@@ -87,7 +114,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{env.PYVERSION}}
+          python-version: 3.13
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -100,8 +127,6 @@ jobs:
           msystem: mingw64
           install: make mingw-w64-x86_64-gcc mingw64/mingw-w64-x86_64-cmake
           update: false
-      - name: Install winget
-        uses: Cyberboss/install-winget@v1
       - name: Install PureData Float 32
         if: matrix.precision == '32'
         run: |
@@ -114,14 +139,19 @@ jobs:
         shell: msys2 {0}
         if: matrix.compiler == 'mingw'
         run: |
-          cmake . -B build -DPD_FLOATSIZE=${{ matrix.precision }} -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} -DPDLIBDIR=./ -DCMAKE_BUILD_TYPE=Release -DPYVERSION=${{env.PYVERSION}}
+          cmake . -B build -DPD_FLOATSIZE=${{ matrix.precision }} -DPD_LIB_DIR=${{ github.workspace }} -DCMAKE_BUILD_TYPE=Release -DPYVERSION=${{ env.PYVERSION }} -DTARGET=CORE2
           cmake --build build --parallel
           cmake --install build
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.LIBNAME}}-windows-${{ matrix.arch }}-pd${{matrix.precision}}
+          name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-windows-latest-${{matrix.arch}}-pd${{matrix.precision}}
           path: ${{env.LIBNAME}}
+#╭──────────────────────────────────────╮
+#│   Here an example to how publish a   │
+#│   release, uncomment the input or    │
+#│            remove the if             │
+#╰──────────────────────────────────────╯
   # publish-release:
   #   if: ${{ github.event.inputs.publish_release == 'true' }}
   #   needs: [macos, linux-build, windows-build]
@@ -153,3 +183,5 @@ jobs:
   #           ${{ env.LIBNAME }}-${{ env.LIBVERSION }}-all-platforms.zip
   #         draft: true
   #         prerelease: false
+
+

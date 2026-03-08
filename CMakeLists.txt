@@ -26,14 +26,13 @@ set(PDCMAKE_VERSION "v0.2.11")
 if(NOT EXISTS ${PDCMAKE_FILE})
     message(STATUS "Downloading pd.cmake")
     file(DOWNLOAD
-         # https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake 
          https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake
          ${PDCMAKE_FILE} STATUS DOWNLOAD_STATUS)
 
 endif()
 include(${PDCMAKE_FILE})
 
-set(PD_OUTPUT_PATH "${PDLIBDIR}/" CACHE PATH "Output directory for Pd externals")
+include_directories("${PD_SOURCES_PATH}")
 
 # ╭──────────────────────────────────────╮
 # │                 CPM                  │
@@ -185,11 +184,11 @@ add_dependencies(
     py4pd
 
     # saf
-    # saf.encoder_tilde
-    # saf.decoder_tilde
-    # saf.binaural_tilde
-    # saf.roomsim_tilde
-    # saf.panner_tilde
+    saf.encoder_tilde
+    saf.decoder_tilde
+    saf.binaural_tilde
+    saf.roomsim_tilde
+    saf.panner_tilde
 )
 
 add_dependencies(xlab edit_files)
