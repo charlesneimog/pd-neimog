@@ -7,13 +7,13 @@ on:
 #│  Uncomment if you want to trigger a  │
 #│               release                │
 #╰──────────────────────────────────────╯
-  # workflow_dispatch:
-  #   inputs:
-  #     publish_release:
-  #       description: Publish a GitHub Release using LIBVERSION after build
-  #       required: false
-  #       type: boolean
-  #       default: false
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish a GitHub Release using LIBVERSION after build
+        required: false
+        type: boolean
+        default: false
 env:
   LIBNAME: xlab
   LIBVERSION: 0.1.0
@@ -40,14 +40,14 @@ jobs:
           brew install pd
       - name: Build
         run: |
-          cmake . -B build -DPD_LIB_DIR=${{ github.workspace }} -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DPD_FLOATSIZE=${{ matrix.precision }} -DPYVERSION=${{env.PYVERSION}}
+          cmake . -B build -DPD_OUTPUT_PATH="${{ github.workspace }}/xlab" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DPD_FLOATSIZE=${{ matrix.precision }} -DPYVERSION=${{env.PYVERSION}}
           cmake --build build -j4
-          cmake --install build
+          #cmake --install build
       - name: Upload Object
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-${{matrix.machines}}-universal-pd${{matrix.precision}}
-          path: ${{env.LIBNAME}}
+          path: ${{ github.workspace }}/${{ env.LIBNAME }}
   linux-build:
     runs-on: ubuntu-latest
     strategy:
@@ -89,7 +89,7 @@ jobs:
           esac
           cmake . -B build \
             -DPD_FLOATSIZE=${{ matrix.precision }} \
-            -DPD_LIB_DIR=${{ github.workspace }} \
+            -DPD_OUTPUT_PATH="${{ github.workspace }}/xlab" \
             -DCMAKE_BUILD_TYPE=Release \
             -DPYVERSION=${{ env.PYVERSION }} \
             ${arch:+-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }}} \
@@ -98,12 +98,12 @@ jobs:
       - name: Build Object
         run: |
           cmake --build build -- -j$(nproc)
-          cmake --install build
+          #cmake --install build
       - name: Upload Object
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-ubuntu-latest-${{matrix.arch}}-pd${{matrix.precision}}
-          path: ${{env.LIBNAME}}
+          path: ${{ github.workspace }}/${{ env.LIBNAME }}
   windows-build:
     runs-on: windows-latest
     strategy:
@@ -125,7 +125,7 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           msystem: mingw64
-          install: make mingw-w64-x86_64-gcc mingw64/mingw-w64-x86_64-cmake
+          install: make mingw-w64-x86_64-gcc mingw64/mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc-fortran
           update: false
       - name: Install PureData Float 32
         if: matrix.precision == '32'
@@ -139,49 +139,48 @@ jobs:
         shell: msys2 {0}
         if: matrix.compiler == 'mingw'
         run: |
-          cmake . -B build -DPD_FLOATSIZE=${{ matrix.precision }} -DPD_LIB_DIR=${{ github.workspace }} -DCMAKE_BUILD_TYPE=Release -DPYVERSION=${{ env.PYVERSION }} -DTARGET=CORE2
+          PD_OUT="$(cygpath -u "$GITHUB_WORKSPACE"/xlab)"
+          cmake . -B build -DPD_FLOATSIZE=${{ matrix.precision }} -DPD_OUTPUT_PATH="$PD_OUT" -DCMAKE_BUILD_TYPE=Release -DPYVERSION=${{ env.PYVERSION }} -DTARGET=CORE2
           cmake --build build --parallel
-          cmake --install build
+          #cmake --install build
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.LIBNAME}}-${{env.LIBVERSION}}-windows-latest-${{matrix.arch}}-pd${{matrix.precision}}
-          path: ${{env.LIBNAME}}
+          path: ${{ github.workspace }}/${{ env.LIBNAME }}
 #╭──────────────────────────────────────╮
 #│   Here an example to how publish a   │
 #│   release, uncomment the input or    │
 #│            remove the if             │
 #╰──────────────────────────────────────╯
-  # publish-release:
-  #   if: ${{ github.event.inputs.publish_release == 'true' }}
-  #   needs: [macos, linux-build, windows-build]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download all artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: artifacts
-  #     - name: Create unified onnx directory and archive
-  #       run: |
-  #         set -e
-  #         TOPDIR="$LIBNAME"
-  #         mkdir -p "$TOPDIR"
-  #         for artifact_dir in artifacts/*; do
-  #           [ -d "$artifact_dir" ] || continue
-  #           cp -r "$artifact_dir/"* "$TOPDIR/"
-  #         done
-  #         ls -1 "$TOPDIR"
-  #         ZIP_NAME="${LIBNAME}-${LIBVERSION}-all-platforms.zip"
-  #         zip -r "$ZIP_NAME" "$TOPDIR"
-  #     - name: Create / Update GitHub Release
-  #       uses: softprops/action-gh-release@v2
-  #       with:
-  #         tag_name: v${{ env.LIBVERSION }}
-  #         name: ${{ env.LIBNAME }} v${{ env.LIBVERSION }}
-  #         target_commitish: ${{ github.sha }}
-  #         files: |
-  #           ${{ env.LIBNAME }}-${{ env.LIBVERSION }}-all-platforms.zip
-  #         draft: true
-  #         prerelease: false
-
-
+  publish-release:
+    if: ${{ github.event.inputs.publish_release == 'true' }}
+    needs: [macos, linux-build, windows-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create unified onnx directory and archive
+        run: |
+          set -e
+          TOPDIR="$LIBNAME"
+          mkdir -p "$TOPDIR"
+          for artifact_dir in artifacts/*; do
+            [ -d "$artifact_dir" ] || continue
+            cp -r "$artifact_dir/"* "$TOPDIR/"
+          done
+          ls -1 "$TOPDIR"
+          ZIP_NAME="${LIBNAME}-${LIBVERSION}-all-platforms.zip"
+          zip -r "$ZIP_NAME" "$TOPDIR"
+      - name: Create / Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.LIBVERSION }}
+          name: ${{ env.LIBNAME }} v${{ env.LIBVERSION }}
+          target_commitish: ${{ github.sha }}
+          files: |
+            ${{ env.LIBNAME }}-${{ env.LIBVERSION }}-all-platforms.zip
+          draft: true
+          prerelease: false
