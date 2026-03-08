@@ -13,9 +13,12 @@ option(IAMCHARLES "Set to ON if you are me, this use local packages" OFF)
 # ╭──────────────────────────────────────╮
 # │                FLAGS                 │
 # ╰──────────────────────────────────────╯
-if(LINUX)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -static-libstdc++")
+if(LINUX OR MINGW)
+    set(CMAKE_EXE_LINKER_FLAGS
+        "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static-libgfortran")
+
+    set(CMAKE_SHARED_LINKER_FLAGS
+        "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static-libgfortran")
 endif()
 
 # ╭──────────────────────────────────────╮
