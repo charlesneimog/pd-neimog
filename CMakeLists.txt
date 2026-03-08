@@ -7,18 +7,14 @@ set(PD_BUILD_STATIC_OBJECTS OFF)
 set(POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
-option(IAMCHARLES "Set to ON if you are me, this use local packages" OFF)
+option(IAMCHARLES "Set to ON if you are Charles K. Neimog, this use local packages" OFF)
 
 # ╭──────────────────────────────────────╮
 # │                FLAGS                 │
 # ╰──────────────────────────────────────╯
 if(LINUX OR MINGW)
-    set(CMAKE_EXE_LINKER_FLAGS
-        "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static-libgfortran")
-
-    set(CMAKE_SHARED_LINKER_FLAGS
-        "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static-libgfortran")
+    message(WARNING "Using static gcc, stdc++ and gfortran")
+    add_link_options(-static-libgcc -static-libstdc++ -static-libgfortran)
 endif()
 
 # ╭──────────────────────────────────────╮
@@ -28,9 +24,8 @@ set(PDCMAKE_FILE ${CMAKE_BINARY_DIR}/pd.cmake)
 set(PDCMAKE_VERSION "v0.2.11")
 if(NOT EXISTS ${PDCMAKE_FILE})
     message(STATUS "Downloading pd.cmake")
-    file(DOWNLOAD
-         https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake
-         ${PDCMAKE_FILE} STATUS DOWNLOAD_STATUS)
+    file(DOWNLOAD https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake ${PDCMAKE_FILE}
+         STATUS DOWNLOAD_STATUS)
 
 endif()
 include(${PDCMAKE_FILE})
@@ -75,7 +70,12 @@ if(NOT EXISTS ${FFTW3_FILE})
     file(DOWNLOAD https://www.fftw.org/fftw-3.3.10.tar.gz ${FFTW3_FILE} STATUS DOWNLOAD_STATUS)
 endif()
 
-file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/fftw-3.3.10.tar.gz DESTINATION ${CMAKE_BINARY_DIR}/)
+file(
+    ARCHIVE_EXTRACT
+    INPUT
+    ${CMAKE_BINARY_DIR}/fftw-3.3.10.tar.gz
+    DESTINATION
+    ${CMAKE_BINARY_DIR}/)
 add_subdirectory(${CMAKE_BINARY_DIR}/fftw-3.3.10 EXCLUDE_FROM_ALL)
 get_property(
     all_targets
@@ -159,7 +159,13 @@ else()
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-saf#main")
 endif()
 
-target_link_libraries(xlab PRIVATE utilities manipulations arrays statistics pdlua)
+target_link_libraries(
+    xlab
+    PRIVATE utilities
+            manipulations
+            arrays
+            statistics
+            pdlua)
 
 # ╭──────────────────────────────────────╮
 # │             xlab library             │
@@ -167,31 +173,26 @@ target_link_libraries(xlab PRIVATE utilities manipulations arrays statistics pdl
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 add_custom_target(
-    edit_files
-    # COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/resources/edit_patches.py ${CMAKE_BINARY_DIR}/xlab
+    edit_files # COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/resources/edit_patches.py ${CMAKE_BINARY_DIR}/xlab
     COMMENT "Editing generated files with Python")
 
 add_dependencies(
     edit_files # target
-
     # lua
     upic
     orchidea
     bhack
-
     # single
     pdonnx
     pv_tilde
     mar_tilde
     onsetsds_tilde
     py4pd
-
     # saf
     saf.encoder_tilde
     saf.decoder_tilde
     saf.binaural_tilde
     saf.roomsim_tilde
-    saf.panner_tilde
-)
+    saf.panner_tilde)
 
 add_dependencies(xlab edit_files)
