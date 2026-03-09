@@ -143,7 +143,10 @@ else()
     cpmaddpackage("gh:charlesneimog/pv_tilde#main")
     cpmaddpackage("gh:charlesneimog/mar_tilde#main")
     cpmaddpackage("gh:charlesneimog/pd-stk#main")
-    cpmaddpackage("gh:charlesneimog/py4pd#master")
+
+    if(NOT EMSCRIPTEN)
+        cpmaddpackage("gh:charlesneimog/py4pd#master")
+    endif()
 
     # lua
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#54e941ff901473986a5e4ce1197c0dbc0d96e3ed")
@@ -187,12 +190,15 @@ add_dependencies(
     pv_tilde
     mar_tilde
     onsetsds_tilde
-    py4pd
-    # saf
+    # py4pd saf
     saf.encoder_tilde
     saf.decoder_tilde
     saf.binaural_tilde
     saf.roomsim_tilde
     saf.panner_tilde)
+
+if(NOT EMSCRIPTEN)
+    add_dependencies(edit_files py4pd)
+endif()
 
 add_dependencies(xlab edit_files)
