@@ -139,17 +139,17 @@ if(IAMCHARLES)
 
     add_subdirectory(../pd-saf ${CMAKE_BINARY_DIR}/pd-saf)
 else()
-    cpmaddpackage("gh:charlesneimog/pd-ambi#main")
+    if(NOT EMSCRIPTEN)
+        cpmaddpackage("gh:charlesneimog/pd-ambi#main")
+        cpmaddpackage("gh:charlesneimog/py4pd#master")
+        cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#54e941ff901473986a5e4ce1197c0dbc0d96e3ed")
+    endif()
+
     cpmaddpackage("gh:charlesneimog/pv_tilde#main")
     cpmaddpackage("gh:charlesneimog/mar_tilde#main")
     cpmaddpackage("gh:charlesneimog/pd-stk#main")
 
-    if(NOT EMSCRIPTEN)
-        cpmaddpackage("gh:charlesneimog/py4pd#master")
-    endif()
-
     # lua
-    cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#54e941ff901473986a5e4ce1197c0dbc0d96e3ed")
     cpmaddpackage("gh:charlesneimog/pd-upic#main")
     cpmaddpackage("gh:charlesneimog/pd-orchidea#main")
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-bhack#main")
