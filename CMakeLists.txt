@@ -13,7 +13,6 @@ option(IAMCHARLES "Set to ON if you are Charles K. Neimog, this use local packag
 # │                FLAGS                 │
 # ╰──────────────────────────────────────╯
 if(LINUX OR MINGW)
-    message(WARNING "Using static gcc, stdc++ and gfortran")
     add_link_options(-static-libgcc -static-libstdc++ -static-libgfortran)
 endif()
 
@@ -21,7 +20,7 @@ endif()
 # │               pd.cmake               │
 # ╰──────────────────────────────────────╯
 set(PDCMAKE_FILE ${CMAKE_BINARY_DIR}/pd.cmake)
-set(PDCMAKE_VERSION "v0.2.11")
+set(PDCMAKE_VERSION "v0.2.15")
 if(NOT EXISTS ${PDCMAKE_FILE})
     message(STATUS "Downloading pd.cmake")
     file(DOWNLOAD https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake ${PDCMAKE_FILE}
@@ -29,7 +28,6 @@ if(NOT EXISTS ${PDCMAKE_FILE})
 
 endif()
 include(${PDCMAKE_FILE})
-
 include_directories("${PD_SOURCES_PATH}")
 
 # ╭──────────────────────────────────────╮
@@ -76,7 +74,8 @@ file(
     ${CMAKE_BINARY_DIR}/fftw-3.3.10.tar.gz
     DESTINATION
     ${CMAKE_BINARY_DIR}/)
-add_subdirectory(${CMAKE_BINARY_DIR}/fftw-3.3.10 EXCLUDE_FROM_ALL)
+
+add_subdirectory(${CMAKE_BINARY_DIR}/fftw-3.3.10 ${CMAKE_BINARY_DIR}/fftw-3.3.10-build EXCLUDE_FROM_ALL)
 get_property(
     all_targets
     DIRECTORY ${CMAKE_BINARY_DIR}/fftw-3.3.10
@@ -114,8 +113,32 @@ file(GLOB utilities_src "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/*.cpp")
 add_library(utilities STATIC "${utilities_src}")
 set_target_properties(utilities PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+set(PYTHON OFF)
+cpmaddpackage("gh:charlesneimog/loris#master")
+
+# freeze
+pd_add_external(
+    lfreeze~
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/spectral/lfreeze~.cpp"
+    LINK_LIBRARIES
+    loris)
+
 # main object
 pd_add_external(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/xlab.cpp")
+
+pd_add_external(
+    xfreeze~
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/fft/xfreeze~.cpp"
+    LINK_LIBRARIES
+    fftw3f)
+
+pd_add_external(
+    gfreeze~
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/fft/gfreeze~.cpp"
+    LINK_LIBRARIES
+    fftw3f)
+
+pd_add_external(xclick~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/xclick~.cpp")
 
 # ╭──────────────────────────────────────╮
 # │         Externals Libraries          │
@@ -142,7 +165,7 @@ else()
     if(NOT EMSCRIPTEN)
         cpmaddpackage("gh:charlesneimog/pd-ambi#main")
         cpmaddpackage("gh:charlesneimog/py4pd#master")
-        cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#54e941ff901473986a5e4ce1197c0dbc0d96e3ed")
+        cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#main")
     endif()
 
     cpmaddpackage("gh:charlesneimog/pv_tilde#main")
@@ -168,7 +191,22 @@ target_link_libraries(
             manipulations
             arrays
             statistics
-            pdlua)
+            lua)
+
+# ╭──────────────────────────────────────╮
+# │ Lua, Python Objects + Audio and Data │
+# ╰──────────────────────────────────────╯
+file(GLOB LUA_OBJECTS "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/*.pd_lua")
+pd_add_datafile(xlab "${LUA_OBJECTS}")
+
+file(GLOB PYTHON_OBJECTS "${CMAKE_CURRENT_SOURCE_DIR}/src/python/*.pd_py")
+pd_add_datafile(xlab "${PYTHON_OBJECTS}")
+
+file(GLOB AUDIO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/audios/*.wav")
+pd_add_datafile(xlab "${AUDIO_FILES}")
+
+file(GLOB ABS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/abs/*.pd")
+pd_add_datafile(xlab "${ABS_FILES}")
 
 # ╭──────────────────────────────────────╮
 # │             xlab library             │
@@ -176,11 +214,15 @@ target_link_libraries(
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 add_custom_target(
-    edit_files # COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/resources/edit_patches.py ${CMAKE_BINARY_DIR}/xlab
+    edit_files
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/resources/edit_patches.py ${CMAKE_BINARY_DIR}/xlab
     COMMENT "Editing generated files with Python")
 
 add_dependencies(
     edit_files # target
+    # fft
+    xfreeze_tilde
+    gfreeze_tilde
     # lua
     upic
     orchidea
@@ -190,7 +232,8 @@ add_dependencies(
     pv_tilde
     mar_tilde
     onsetsds_tilde
-    # py4pd saf
+    py4pd
+    saf
     saf.encoder_tilde
     saf.decoder_tilde
     saf.binaural_tilde

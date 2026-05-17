@@ -15,18 +15,18 @@ if not root.is_dir():
     sys.exit(1)
 
 # Regex patterns
-else_object = re.compile(r'\belse/([A-Za-z0-9_.~]+)')
-declare_else = re.compile(r'\bdeclare\s+-lib\s+else\b')
-relative_saf = re.compile(r'\.\./Sources/(saf\.[A-Za-z0-9_.~]+)')
+else_out_mc = re.compile(r"else/out\.mc~")
+else_object = re.compile(r"\belse/([A-Za-z0-9_.~]+)")
+declare_else = re.compile(r"\bdeclare\s+-lib\s+else\b")
+relative_saf = re.compile(r"\.\./Sources/(saf\.[A-Za-z0-9_.~]+)")
 
 for pd_file in root.rglob("*.pd"):
     text = pd_file.read_text(encoding="utf-8")
-
     new_text = text
-    new_text = else_object.sub(r'\1', new_text)
-    new_text = declare_else.sub('declare -lib xlab', new_text)
-    new_text = relative_saf.sub(r'\1', new_text)
-
+    new_text = else_out_mc.sub("dac~ -m", new_text)
+    new_text = else_object.sub(r"xlab/\1", new_text)
+    new_text = declare_else.sub("declare -lib xlab", new_text)
+    new_text = relative_saf.sub(r"\1", new_text)
     if new_text != text:
         pd_file.write_text(new_text, encoding="utf-8")
         print(f"patched: {pd_file}")

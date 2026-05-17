@@ -34,7 +34,7 @@ extern "C" void xlab_setup(void) {
     }
 
     t_canvas *cnv = canvas_getcurrent();
-    std::vector<std::string> libs = {"pdlua", "py4pd"};
+    std::vector<std::string> libs = {"lua", "py4pd"};
     for (auto lib : libs) {
         int result = sys_load_lib(cnv, lib.c_str());
         if (!result) {

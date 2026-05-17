@@ -7,7 +7,7 @@
 #X obj 42 68 osc~ 440;
 #X obj 42 90 *~ 0.2;
 #X obj 9 216 saf.meter~ -width 8 -height 120 -frames 20 -inchs 1;
-#X obj 44 148 saf.decoder~ 2 2;
+#X obj 44 168 saf.decoder~ 2 2;
 #X obj 44 227 dac~, f 16;
 #X msg 192 93 source 1 \$1 0;
 #X obj 199 31 hsl 153 18 0 180 0 0 empty empty empty -2 -9 0 10 #fcfcfc #000000 #000000 0 1;

@@ -10,13 +10,17 @@ class infinite_record {
     t_sample x_f;
     t_clock *x_clock_warning;
     t_clock *x_clock_report;
+    t_clock *x_clock_update;
 
     bool recording;
     bool fade_in_out;
     int fade_size_samples;
 
     std::string arrayname;
+
+    t_garray *array;
     t_word *vec;
+
     int vecsize;
     int write_index;
     int sr;
@@ -24,6 +28,32 @@ class infinite_record {
     std::vector<float> buffer;
     t_outlet *outlet_report;
 };
+
+// ─────────────────────────────────────
+static void infinite_record_sync_array(infinite_record *x) {
+    t_garray *array = (t_garray *)pd_findbyclass(gensym(x->arrayname.c_str()), garray_class);
+    if (!array)
+        return;
+
+    const int n = static_cast<int>(x->buffer.size());
+    garray_resize_long(array, n);
+
+    int vecsize = 0;
+    t_word *vec = nullptr;
+    if (!garray_getfloatwords(array, &vecsize, &vec) || !vec)
+        return;
+
+    const int copy_size = (n < vecsize) ? n : vecsize;
+    for (int i = 0; i < copy_size; i++) {
+        vec[i].w_float = x->buffer[i];
+    }
+
+    x->array = array;
+    x->vec = vec;
+    x->vecsize = vecsize;
+    x->write_index = copy_size;
+    garray_redraw(array);
+}
 
 // ─────────────────────────────────────
 static void infinite_record_report(infinite_record *x) {
@@ -42,20 +72,25 @@ static void infinite_record_warning(infinite_record *x) {
             seconds = static_cast<float>(x->buffer.size()) / x->sr;
 
         post("[infinite.record~] recording audio: %.2f seconds", seconds);
-        clock_delay(x->x_clock_warning, 1000);
+        clock_delay(x->x_clock_warning, 3000);
     }
 }
 
 // ─────────────────────────────────────
+static void infinite_record_update(infinite_record *x) {
+    if (!x->recording)
+        return;
+
+    infinite_record_sync_array(x);
+    clock_delay(x->x_clock_update, 1000);
+}
+
+// ─────────────────────────────────────
 static void infinite_record_stop(infinite_record *x) {
-    if (!x->vec)
+    if (!x->recording && x->buffer.empty())
         return;
 
-    t_garray *array = (t_garray *)pd_findbyclass(gensym(x->arrayname.c_str()), garray_class);
-    if (!array)
-        return;
-
-    int n = x->buffer.size();
+    int n = static_cast<int>(x->buffer.size());
 
     if (x->fade_in_out) {
         if (x->fade_size_samples > n - 1) {
@@ -74,17 +109,24 @@ static void infinite_record_stop(infinite_record *x) {
         }
     }
 
-    // Sempre redimensiona a array para exatamente o tamanho do buffer
-    garray_resize_long(array, n);
-    garray_getfloatwords(array, &x->vecsize, &x->vec);
-
-    for (int i = 0; i < n; i++) {
-        x->vec[i].w_float = x->buffer[i];
-    }
-
-    x->write_index = n;
-    garray_redraw(array);
+    infinite_record_sync_array(x);
     x->buffer.clear();
+}
+
+// ─────────────────────────────────────
+static void infinite_record_float(infinite_record *x, t_float f) {
+    if (f == 0) {
+        x->recording = false;
+        clock_unset(x->x_clock_warning);
+        clock_unset(x->x_clock_update);
+        infinite_record_stop(x);
+    } else if (f == 1) {
+        x->recording = true;
+        clock_delay(x->x_clock_warning, 0);
+        clock_delay(x->x_clock_update, 0);
+    } else {
+        pd_error(x, "[infinite.record~] must be 0 or 1");
+    }
 }
 
 // ─────────────────────────────────────
@@ -93,8 +135,11 @@ static void infinite_record_methods(infinite_record *x, t_symbol *s, int argc, t
     if (method == "start") {
         x->recording = true;
         clock_delay(x->x_clock_warning, 0);
+        clock_delay(x->x_clock_update, 0);
     } else if (method == "stop") {
         x->recording = false;
+        clock_unset(x->x_clock_warning);
+        clock_unset(x->x_clock_update);
         infinite_record_stop(x);
     } else if (method == "fade") {
         float f = atom_getfloat(argv);
@@ -105,6 +150,9 @@ static void infinite_record_methods(infinite_record *x, t_symbol *s, int argc, t
         }
     } else if (method == "fadesize") {
         x->fade_size_samples = atom_getfloat(argv);
+    } else {
+        pd_error(x, "[infinite.record~] Unknow method '%s'", method.c_str());
+        return;
     }
 
     return;
@@ -149,9 +197,9 @@ static void *infinite_record_new(t_symbol *s, int argc, t_atom *argv) {
         x->sr = 44100; // default
 
     // Initialize array pointer
-    t_garray *array = (t_garray *)pd_findbyclass(gensym(x->arrayname.c_str()), garray_class);
-    if (array) {
-        garray_getfloatwords(array, &x->vecsize, &x->vec);
+    x->array = (t_garray *)pd_findbyclass(gensym(x->arrayname.c_str()), garray_class);
+    if (x->array) {
+        garray_getfloatwords(x->array, &x->vecsize, &x->vec);
     }
     if (!x->vec) {
         logpost(x, 1, "[infinite.record~] Array not found");
@@ -160,16 +208,25 @@ static void *infinite_record_new(t_symbol *s, int argc, t_atom *argv) {
 
     x->fade_in_out = false;
     x->fade_size_samples = 64;
+    x->recording = false;
     x->outlet_report = outlet_new(&x->x_obj, &s_float);
 
     // warning clock
     x->x_clock_warning = clock_new(x, (t_method)infinite_record_warning);
     x->x_clock_report = clock_new(x, (t_method)infinite_record_report);
+    x->x_clock_update = clock_new(x, (t_method)infinite_record_update);
     return (x);
 }
 
 // ─────────────────────────────────────
-static void infinite_record_free(infinite_record *x) {}
+static void infinite_record_free(infinite_record *x) {
+    if (x->x_clock_warning)
+        clock_free(x->x_clock_warning);
+    if (x->x_clock_report)
+        clock_free(x->x_clock_report);
+    if (x->x_clock_update)
+        clock_free(x->x_clock_update);
+}
 
 // ─────────────────────────────────────
 void infinite0x2erecord_tilde_setup(void) {
@@ -178,6 +235,7 @@ void infinite0x2erecord_tilde_setup(void) {
                                       CLASS_DEFAULT, A_GIMME, 0);
 
     CLASS_MAINSIGNALIN(infinite_record_class, infinite_record, x_f);
+    class_addfloat(infinite_record_class, infinite_record_float);
     class_addmethod(infinite_record_class, (t_method)infinite_record_dsp, gensym("dsp"), A_CANT, 0);
 
     class_addmethod(infinite_record_class, (t_method)infinite_record_methods, gensym("start"),

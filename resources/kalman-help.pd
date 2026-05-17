@@ -1,4 +1,4 @@
-#N canvas 963 23 951 1016 10;
+#N canvas 0 0 925 1132 10;
 #X declare -lib pd-neimog;
 #N canvas 343 184 494 344 META 0;
 #X text 12 157 HELP_PATCH_AUTHORS "pd meta" information added by Jonathan Wilkes for Pd version 0.42.;
@@ -12,10 +12,14 @@
 #X restore 623 277 pd META;
 #N canvas 0 0 450 300 (subpatch) 0;
 #X array original 200 float 0;
+#A color 0;
+#A width 1;
 #X coords 0 1 199 -1 200 140 1 0 0;
 #X restore 470 -57 graph;
 #N canvas 0 0 450 300 (subpatch) 0;
 #X array filtered 200 float 0;
+#A color 0;
+#A width 1;
 #X coords 0 1 199 -1 200 140 1 0 0;
 #X restore 469 122 graph;
 #X obj 284 -24 metro 50;
