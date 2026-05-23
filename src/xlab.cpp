@@ -57,6 +57,7 @@ extern "C" void xlab_setup(void) {
 
     // utils
     infinite0x2erecord_tilde_setup();
+    xcputime_setup();
 
     post("[pd-xlab] version %d.%d.%d build on %s %s", 0, 1, 0, __DATE__, __TIME__);
 }

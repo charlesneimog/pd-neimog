@@ -18,6 +18,8 @@ void euclidean_setup(void);
 void entropy_setup(void);
 void kalman_setup(void);
 
+void xcputime_setup(void);
+
 extern "C" void pdlua_setup(void);
 
 // ╭─────────────────────────────────────╮
