@@ -35,3 +35,5 @@ pd-neimog.l_amd64
 .cache/clangd/index
 compile_commands.json
 /xlab
+/.build
+/src/lua/scl

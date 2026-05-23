@@ -13,7 +13,7 @@ option(IAMCHARLES "Set to ON if you are Charles K. Neimog, this use local packag
 # │                FLAGS                 │
 # ╰──────────────────────────────────────╯
 if(LINUX OR MINGW)
-    add_link_options(-static-libgcc -static-libstdc++ -static-libgfortran)
+    add_link_options(-static-libgcc -static-libstdc++)
 endif()
 
 # ╭──────────────────────────────────────╮
@@ -161,6 +161,7 @@ if(IAMCHARLES)
     add_subdirectory(../dragonfly_tilde ${CMAKE_BINARY_DIR}/dragonfly_tilde)
 
     add_subdirectory(../pd-saf ${CMAKE_BINARY_DIR}/pd-saf)
+    add_subdirectory(../pd-soundtouch ${CMAKE_BINARY_DIR}/pd-soundtouch)
 else()
     if(NOT EMSCRIPTEN)
         cpmaddpackage("gh:charlesneimog/pd-ambi#main")
@@ -232,6 +233,7 @@ add_dependencies(
     pv_tilde
     mar_tilde
     onsetsds_tilde
+    soundtouch_tilde
     py4pd
     saf
     saf.encoder_tilde
