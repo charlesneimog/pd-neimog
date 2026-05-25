@@ -181,6 +181,7 @@ else()
     # single objects
     cpmaddpackage("gh:charlesneimog/pd-onnx#main")
     cpmaddpackage("gh:charlesneimog/onsetsds_tilde#v0.1.0")
+    cpmaddpackage("gh:charlesneimog/dragonfly_tilde#main")
 
     # saf
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-saf#main")
@@ -233,6 +234,7 @@ add_dependencies(
     pv_tilde
     mar_tilde
     onsetsds_tilde
+    dragonfly_tilde
     saf
     saf.encoder_tilde
     saf.decoder_tilde
