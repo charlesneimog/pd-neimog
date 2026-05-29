@@ -229,7 +229,6 @@ add_dependencies(
     orchidea
     bhack
     # single
-    pdonnx
     pv_tilde
     mar_tilde
     onsetsds_tilde
