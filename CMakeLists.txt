@@ -83,7 +83,7 @@ get_property(
 
 set_target_properties(fftw3f PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set_target_properties(fftw3f PROPERTIES POSITION_INDEPENDENT_CODE ON)
-include_directories(${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
+# include_directories(${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 
 # ╭──────────────────────────────────────╮
 # │               Objects                │
@@ -156,7 +156,7 @@ if(IAMCHARLES)
     add_subdirectory(../pd-orchidea ${CMAKE_BINARY_DIR}/pd-orchidea)
     add_subdirectory(../pd-bhack ${CMAKE_BINARY_DIR}/pd-bhack)
 
-    #add_subdirectory(../pd-onnx ${CMAKE_BINARY_DIR}/pd-onnx)
+    # add_subdirectory(../pd-onnx ${CMAKE_BINARY_DIR}/pd-onnx)
     add_subdirectory(../onsetsds_tilde ${CMAKE_BINARY_DIR}/onsetsds_tilde)
     add_subdirectory(../dragonfly_tilde ${CMAKE_BINARY_DIR}/dragonfly_tilde)
 
@@ -178,8 +178,7 @@ else()
     cpmaddpackage("gh:charlesneimog/pd-orchidea#main")
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-bhack#main")
 
-    # single objects
-    #cpmaddpackage("gh:charlesneimog/pd-onnx#main")
+    # single objects cpmaddpackage("gh:charlesneimog/pd-onnx#main")
     cpmaddpackage("gh:charlesneimog/onsetsds_tilde#v0.1.0")
     cpmaddpackage("gh:charlesneimog/pd-dragonfly_tilde#main")
 
