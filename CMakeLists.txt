@@ -115,6 +115,12 @@ set_target_properties(utilities PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set(PYTHON OFF)
 cpmaddpackage("gh:charlesneimog/loris#master")
+set_target_properties(
+    loris
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+               CXX_STANDARD_REQUIRED ON
+               CXX_EXTENSIONS OFF)
+target_include_directories(loris PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 
 # freeze
 pd_add_external(
@@ -137,6 +143,10 @@ pd_add_external(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/fft/gfreeze~.cpp"
     LINK_LIBRARIES
     fftw3f)
+
+target_include_directories(xfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
+target_include_directories(gfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
+target_include_directories(manipulations PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 
 pd_add_external(xclick~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/xclick~.cpp")
 
