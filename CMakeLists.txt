@@ -190,7 +190,7 @@ else()
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-bhack#main")
 
     # single objects cpmaddpackage("gh:charlesneimog/pd-onnx#main")
-    cpmaddpackage("gh:charlesneimog/onsetsds_tilde#v0.1.0")
+    cpmaddpackage("gh:charlesneimog/onsetsds_tilde#main")
     cpmaddpackage("gh:charlesneimog/pd-dragonfly_tilde#main")
 
     # saf
