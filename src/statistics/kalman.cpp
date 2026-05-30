@@ -172,7 +172,7 @@ static void kalman_free(t_kalman *x) {
 }
 
 // ─────────────────────────────────────
-void kalman_setup(void) {
+extern "C" void kalman_setup(void) {
     kalman_class = class_new(gensym("kalman"), (t_newmethod)kalman_new, (t_method)kalman_free,
                              sizeof(t_kalman), 0, A_GIMME, 0);
     class_addmethod(kalman_class, (t_method)kalman_setnoise, gensym("noise"), A_FLOAT, 0);

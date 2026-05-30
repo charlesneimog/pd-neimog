@@ -73,7 +73,7 @@ static void *arrayrotate_new(t_symbol *s) {
 }
 
 // ─────────────────────────────────────
-void arrayrotate_setup(void) {
+extern "C" void arrayrotate_setup(void) {
     neimog_arrayrotate = class_new(gensym("a.rotate"), (t_newmethod)arrayrotate_new, 0,
                                    sizeof(arrayrotate), 0, A_SYMBOL, 0);
 

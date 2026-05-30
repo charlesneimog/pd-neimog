@@ -87,30 +87,18 @@ set_target_properties(fftw3f PROPERTIES POSITION_INDEPENDENT_CODE ON)
 # ╭──────────────────────────────────────╮
 # │               Objects                │
 # ╰──────────────────────────────────────╯
-file(GLOB statistics_src "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/*.cpp")
-add_library(statistics STATIC "${statistics_src}")
-set_target_properties(statistics PROPERTIES POSITION_INDEPENDENT_CODE ON)
+pd_add_external(entropy "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/entropy.cpp")
+pd_add_external(euclidean "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/euclidean.cpp")
+pd_add_external(kalman "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/kalman.cpp")
+pd_add_external(kl "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/kullback-leibler.cpp")
 
 # array
-file(GLOB arrays_src "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/*.cpp")
-add_library(arrays STATIC "${arrays_src}")
-set_target_properties(arrays PROPERTIES POSITION_INDEPENDENT_CODE ON)
+pd_add_external(a.rotate "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.rotate.cpp")
+pd_add_external(a.invert "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.invert.cpp")
+pd_add_external(a.sum "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.sum.cpp")
 
 # manipulations
-file(GLOB manipulations "${CMAKE_CURRENT_SOURCE_DIR}/src/manipulations/*.cpp")
-add_library(manipulations STATIC "${manipulations}")
-set_target_properties(manipulations PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_link_libraries(manipulations PUBLIC fftw3f)
-
-# mir
-file(GLOB mir_source "${CMAKE_CURRENT_SOURCE_DIR}/src/mir/*.cpp")
-add_library(mir STATIC "${mir_source}")
-set_target_properties(mir PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-# utilities
-file(GLOB utilities_src "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/*.cpp")
-add_library(utilities STATIC "${utilities_src}")
-set_target_properties(utilities PROPERTIES POSITION_INDEPENDENT_CODE ON)
+pd_add_external(infinite.record "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/infinite.record.cpp")
 
 set(PYTHON OFF)
 cpmaddpackage("gh:charlesneimog/loris#master")
@@ -145,10 +133,7 @@ pd_add_external(
 
 target_include_directories(xfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 target_include_directories(gfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
-target_include_directories(manipulations PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
-
 include_directories(${CMAKE_BINARY_DIR}/)
-
 pd_add_external(xclick~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/xclick~.cpp")
 
 # ╭──────────────────────────────────────╮
@@ -197,13 +182,7 @@ else()
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-saf#main")
 endif()
 
-target_link_libraries(
-    xlab
-    PRIVATE utilities
-            manipulations
-            arrays
-            statistics
-            lua)
+target_link_libraries(xlab PRIVATE lua)
 
 # ╭──────────────────────────────────────╮
 # │ Lua, Python Objects + Audio and Data │

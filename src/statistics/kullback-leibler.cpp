@@ -205,7 +205,7 @@ static void *kl_free(kl *x) {
 }
 
 // ─────────────────────────────────────
-void kldivergence_setup(void) {
+extern "C" void kldivergence_setup(void) {
     neimog_kl =
         class_new(gensym("kl"), (t_newmethod)kl_new, (t_method)kl_free, sizeof(kl), 0, A_GIMME, 0);
     class_addcreator((t_newmethod)kl_new, gensym("kl~"), A_GIMME, 0);
