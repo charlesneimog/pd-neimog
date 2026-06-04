@@ -293,7 +293,8 @@ static void infinite_record_free(infinite_record *x) {
 }
 
 // ─────────────────────────────────────
-void infinite0x2erecord_tilde_setup(void) {
+//
+extern "C" void setup_infinite0x2erecord_tilde(void) {
     infinite_record_class = class_new(gensym("infinite.record~"), (t_newmethod)infinite_record_new,
                                       (t_method)infinite_record_free, sizeof(infinite_record),
                                       CLASS_DEFAULT, A_GIMME, 0);

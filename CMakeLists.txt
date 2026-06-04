@@ -98,7 +98,7 @@ pd_add_external(a.invert "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.invert.cpp")
 pd_add_external(a.sum "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.sum.cpp")
 
 # manipulations
-pd_add_external(infinite.record "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/infinite.record.cpp")
+pd_add_external(infinite.record~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/infinite.record.cpp")
 
 set(PYTHON OFF)
 cpmaddpackage("gh:charlesneimog/loris#master")
