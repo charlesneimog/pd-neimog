@@ -91,6 +91,11 @@ pd_add_external(entropy "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/entropy.cpp"
 pd_add_external(euclidean "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/euclidean.cpp")
 pd_add_external(kalman "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/kalman.cpp")
 pd_add_external(kl "${CMAKE_CURRENT_SOURCE_DIR}/src/statistics/kullback-leibler.cpp")
+pd_add_external(
+    xconv~
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/fft/xconvolve~.cpp"
+    LINK_LIBRARIES
+    fftw3f)
 
 # array
 pd_add_external(a.rotate "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.rotate.cpp")
@@ -99,6 +104,18 @@ pd_add_external(a.sum "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.sum.cpp")
 
 # manipulations
 pd_add_external(infinite.record~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/infinite.record.cpp")
+pd_add_external(fdn~ "${CMAKE_CURRENT_SOURCE_DIR}/src/reverb/fdn~.cpp")
+
+cpmaddpackage("gh:PelleJuul/zita-rev1#master")
+
+add_library(zitarev1 STATIC "${zita-rev1_SOURCE_DIR}/source/pareq.cpp;${zita-rev1_SOURCE_DIR}/source/reverb.cpp")
+set_target_properties(zitarev1 PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(zitarev1 PUBLIC "${zita-rev1_SOURCE_DIR}/source")
+pd_add_external(
+    zita.rev~
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/reverb/zita.rev~.cpp"
+    LINK_LIBRARIES
+    zitarev1)
 
 set(PYTHON OFF)
 cpmaddpackage("gh:charlesneimog/loris#master")
@@ -133,8 +150,30 @@ pd_add_external(
 
 target_include_directories(xfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 target_include_directories(gfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
-include_directories(${CMAKE_BINARY_DIR}/)
+#include_directories(${CMAKE_BINARY_DIR}/)
 pd_add_external(xclick~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/xclick~.cpp")
+
+set(NW_GVERB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/nw.gverb_tilde.cpp"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/reverb_bb.cpp")
+pd_add_external(
+    nw.gverb~
+    "${NW_GVERB_SOURCES}"
+    TARGET
+    nw_gverb_tilde)
+
+# ╭──────────────────────────────────────╮
+# │             DDDD Package             │
+# ╰──────────────────────────────────────╯
+include(FetchContent)
+FetchContent_Declare(
+    dddd
+    GIT_REPOSITORY https://github.com/EL-LOCUS-SOLUS/pd-dddd
+    GIT_TAG main)
+FetchContent_MakeAvailable(dddd)
+FetchContent_GetProperties(dddd)
+set(DDDD_PATH ${dddd_SOURCE_DIR})
+set(DDDD_LUA ${DDDD_PATH}/dddd.lua)
+message(STATUS "dddd file: ${DDDD_LUA}")
 
 # ╭──────────────────────────────────────╮
 # │         Externals Libraries          │
@@ -184,6 +223,8 @@ endif()
 
 target_link_libraries(xlab PRIVATE lua)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/)
+
 # ╭──────────────────────────────────────╮
 # │ Lua, Python Objects + Audio and Data │
 # ╰──────────────────────────────────────╯
@@ -198,6 +239,7 @@ pd_add_datafile(xlab "${AUDIO_FILES}")
 
 file(GLOB ABS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/abs/*.pd")
 pd_add_datafile(xlab "${ABS_FILES}")
+pd_add_datafile(xlab "${DDDD_LUA}")
 
 # ╭──────────────────────────────────────╮
 # │             xlab library             │
