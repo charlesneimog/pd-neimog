@@ -10,7 +10,7 @@
 
 static t_class *xfreeze_class;
 
-typedef struct _xfreeze {
+typedef struct _xconv {
     t_object x_obj;
     t_float x_f;
     t_outlet *x_out;
@@ -59,9 +59,7 @@ typedef struct _xfreeze {
 } t_xfreeze;
 
 // ─────────────────────────────────────
-static int xfreeze_matrix_stride(const t_xfreeze *x) {
-    return (x->halfSize + 1) * 2;
-}
+static int xfreeze_matrix_stride(const t_xfreeze *x) { return (x->halfSize + 1) * 2; }
 
 // ─────────────────────────────────────
 static int xfreeze_matrix_size(const t_xfreeze *x) {
@@ -520,7 +518,8 @@ static void xfreeze_dsp(t_xfreeze *x, t_signal **sp) {
     x->dspBlockSize = sp[0]->s_n;
     if ((x->dspBlockSize != x->fftSize || (x->dspBlockSize % x->hopSize) != 0) &&
         !x->warnedBlockSize) {
-        post("[xfreeze~] warning: block size (%d) must equal fftSize (%d) and be divisible by hop (%d); "
+        post("[xfreeze~] warning: block size (%d) must equal fftSize (%d) and be divisible by hop "
+             "(%d); "
              "passing signal through",
              x->dspBlockSize, x->fftSize, x->hopSize);
         x->warnedBlockSize = 1;
@@ -574,9 +573,7 @@ static void xfreeze_speed(t_xfreeze *x, t_floatarg f) {
 }
 
 // ─────────────────────────────────────
-static void xfreeze_phaselock(t_xfreeze *x, t_floatarg f) {
-    x->phaseLock = (f != 0.0f);
-}
+static void xfreeze_phaselock(t_xfreeze *x, t_floatarg f) { x->phaseLock = (f != 0.0f); }
 
 // ─────────────────────────────────────
 static void xfreeze_array(t_xfreeze *x, t_symbol *s) {

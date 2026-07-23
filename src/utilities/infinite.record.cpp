@@ -313,3 +313,8 @@ extern "C" void infinite0x2erecord_tilde_setup(void) {
     class_addmethod(infinite_record_class, (t_method)infinite_record_fadesize, gensym("fadesize"),
                     A_FLOAT, 0);
 }
+
+extern "C" void setup_infinite0x2erecord_tilde(void) {
+    //
+    infinite0x2erecord_tilde_setup();
+}
