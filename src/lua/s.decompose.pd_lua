@@ -1,4 +1,4 @@
-local decompose = pd.Class:new():register("s-decompose")
+local decompose = pd.Class:new():register("s.decompose")
 local sieve = require("sieve")
 
 function decompose:initialize()

@@ -2,7 +2,7 @@
 #X declare -lib xlab;
 #X obj 2 5 declare -lib xlab;
 #X obj 3 76 revel-sieve;
-#X obj 3 54 s-ariza 100;
+#X obj 3 54 s.ariza 100;
 #X text 82 77 <= Sieves of Xenakis;
 #X msg 3 30 list ((13@73 i 8@70) u (3@15 i 5@33 i 2@33) u (3@23 i 8@23));
 #X obj 3 252 ji.prime-decomposition;

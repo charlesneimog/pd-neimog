@@ -1,4 +1,4 @@
-local ariza = pd.Class:new():register("s-ariza")
+local ariza = pd.Class:new():register("s.ariza")
 local sieve = require("sieve")
 
 function ariza:initialize(_, atoms)

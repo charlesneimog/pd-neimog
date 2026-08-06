@@ -1,4 +1,4 @@
-local list = pd.Class:new():register("s-list")
+local list = pd.Class:new():register("s.list")
 local sieve = require("sieve")
 
 function list:initialize()

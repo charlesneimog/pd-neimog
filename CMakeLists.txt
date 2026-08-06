@@ -230,6 +230,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/)
 # ╰──────────────────────────────────────╯
 file(GLOB LUA_OBJECTS "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/*.pd_lua")
 pd_add_datafile(xlab "${LUA_OBJECTS}")
+file(GLOB JI_HELP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/ji*-help.pd")
+pd_add_datafile(xlab "${JI_HELP_FILES}")
 pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/l.gain~-help.pd")
 pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/sieve.lua")
 pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/om_ji.lua")

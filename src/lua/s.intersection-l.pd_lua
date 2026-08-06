@@ -1,4 +1,4 @@
-local intersection_list = pd.Class:new():register("s-intersection-l")
+local intersection_list = pd.Class:new():register("s.intersection-l")
 local sieve = require("sieve")
 
 function intersection_list:initialize()

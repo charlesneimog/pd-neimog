@@ -16,7 +16,7 @@
 #X msg 3 30 list ((13@73 i 8@70) u (3@15 i 5@33 i 2@33) u (3@23 i 8@23));
 #X obj 3 352 bhack.chord-seq 400 80;
 #X msg 116 324 play;
-#X obj 3 54 s-ariza 90;
+#X obj 3 54 s.ariza 90;
 #X obj 3 270 bhack.scale 48 84, f 20;
 #X obj 3 312 bhack.mton 12edo;
 #X connect 1 0 2 0;

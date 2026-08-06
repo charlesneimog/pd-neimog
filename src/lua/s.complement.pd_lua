@@ -1,4 +1,4 @@
-local complement = pd.Class:new():register("s-complement")
+local complement = pd.Class:new():register("s.complement")
 local sieve = require("sieve")
 
 function complement:initialize()

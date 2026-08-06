@@ -283,7 +283,7 @@ functions["ji.range-change-notes"] = function(notes, tuning, range)
 	return result
 end
 
-functions["ji.Diamond"] = function(limit)
+functions["ji.diamond"] = function(limit)
 	limit = integer(scalar(limit), "limit")
 	local identities = {}
 	for value = 1, limit, 2 do identities[#identities + 1] = value end
@@ -297,7 +297,7 @@ functions["ji.Diamond"] = function(limit)
 	return { utonal, otonal }
 end
 
-functions["ji.Diamond-Identity"] = function(identities)
+functions["ji.diamond-Identity"] = function(identities)
 	local utonal, otonal = {}, {}
 	for _, x in ipairs(identities) do
 		local urow, orow = {}, {}
@@ -516,8 +516,8 @@ local specs = {
 	["ji.rt-octave"] = { { "1/3", 1, "5/3" }, 2 },
 	["ji.change-notes"] = { { 60, 61, 62 }, { 60, 64.98, 69.96, 62.94, 67.92 } },
 	["ji.range-change-notes"] = { { 60, 61, 62 }, { 60, 64.98, 69.96, 62.94, 67.92 }, { 0.30, 5 } },
-	["ji.Diamond"] = { defaults = { 11 }, outlets = 2 },
-	["ji.Diamond-Identity"] = { defaults = { { 11, 19, 97 } }, outlets = 2 },
+	["ji.diamond"] = { defaults = { 11 }, outlets = 2 },
+	["ji.diamond-identity"] = { defaults = { { 11, 19, 97 } }, outlets = 2 },
 	["ji.chord-inverse"] = { { "1/1", "3/2", "5/4" } },
 	["ji.cpstoidentity"] = { { { 1, 3 }, { 1, 5 }, { 3, 5 } } },
 	["ji.cpstoratio"] = { { 1, 3, 5, 7 } },

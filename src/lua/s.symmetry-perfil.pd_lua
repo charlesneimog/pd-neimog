@@ -1,4 +1,4 @@
-local symmetry = pd.Class:new():register("s-symmetry-perfil")
+local symmetry = pd.Class:new():register("s.symmetry-perfil")
 local sieve = require("sieve")
 
 function symmetry:initialize(_, atoms)

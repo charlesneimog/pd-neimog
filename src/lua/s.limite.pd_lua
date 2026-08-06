@@ -1,4 +1,4 @@
-local limite = pd.Class:new():register("s-limite")
+local limite = pd.Class:new():register("s.limite")
 local sieve = require("sieve")
 
 function limite:initialize(_, atoms)

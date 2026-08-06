@@ -1,4 +1,4 @@
-local union_list = pd.Class:new():register("s-union-l")
+local union_list = pd.Class:new():register("s.union-l")
 local sieve = require("sieve")
 
 function union_list:initialize()
