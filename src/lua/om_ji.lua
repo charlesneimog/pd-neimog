@@ -297,7 +297,7 @@ functions["ji.diamond"] = function(limit)
 	return { utonal, otonal }
 end
 
-functions["ji.diamond-Identity"] = function(identities)
+functions["ji.diamond-identity"] = function(identities)
 	local utonal, otonal = {}, {}
 	for _, x in ipairs(identities) do
 		local urow, orow = {}, {}
