@@ -2,7 +2,7 @@
 #X declare -lib xlab;
 #X obj 9 4 declare -lib xlab;
 #X obj 36 107 bng 18 250 50 0 empty empty empty 0 -9 0 10 #fcfcfc #000000 #000000;
-#X obj 36 175 johnston 3/2 25 6000;
+#X obj 36 175 ji.johnston 3/2 25 60;
 #X obj 36 198 bhack.define;
 #X obj 36 296 bhack.chords;
 #X obj 36 220 bhack.mton;

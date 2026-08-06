@@ -1,4 +1,4 @@
-local johnston = pd.Class:new():register("johnston")
+local johnston = pd.Class:new():register("ji.johnston")
 
 -- ─────────────────────────────────────
 function johnston:initialize(_, atoms)
@@ -17,25 +17,24 @@ function johnston:initialize(_, atoms)
 
 		self.ratio = type(atoms[1]) == "number" and atoms[1] or 3 / 2
 		self.sobreposition = type(atoms[2]) == "number" and atoms[2] or 3
-		self.fundamental = type(atoms[3]) == "number" and atoms[3] or 7200
+		self.fundamental = type(atoms[3]) == "number" and atoms[3] or 72
 
-		self.fundamental_freq = self:mc2freq(self.fundamental)
+		self.fundamental_freq = self:midi2freq(self.fundamental)
 	end
 
 	return true
 end
 
 -- ─────────────────────────────────────
-function johnston:mc2freq(midicents)
-	-- Standard MIDI cents to frequency conversion
-	-- 0 cents = 8.1758 Hz (C-1)
-	return 8.1758 * (2 ^ (midicents / 1200))
+function johnston:midi2freq(midi)
+	-- Standard fractional MIDI note to frequency conversion.
+	return 440 * (2 ^ ((midi - 69) / 12))
 end
 
 -- ─────────────────────────────────────
--- Helper: Convert frequency to midicents
-function johnston:freq2mc(freq)
-	return 1200 * math.log(freq / 8.1758) / math.log(2)
+-- Helper: Convert frequency to a fractional MIDI note.
+function johnston:freq2midi(freq)
+	return 69 + 12 * math.log(freq / 440) / math.log(2)
 end
 
 -- ─────────────────────────────────────
@@ -63,7 +62,7 @@ function johnston:process()
 	for i = 1, #sobr_seq do
 		local factor = self.ratio ^ sobr_seq[i]
 		local freq = self.fundamental_freq * factor
-		otonal[i] = self:freq2mc(freq)
+		otonal[i] = self:freq2midi(freq)
 	end
 
 	-- Calculate Utonal sobreposition (stacking below fundamental)
@@ -72,7 +71,7 @@ function johnston:process()
 	for i = 1, #sobr_seq do
 		local factor = utonal_sobr ^ sobr_seq[i]
 		local freq = self.fundamental_freq * factor
-		utonal[i] = self:freq2mc(freq)
+		utonal[i] = self:freq2midi(freq)
 	end
 
 	-- Output the combined list: utonal + fundamental + otonal
@@ -121,13 +120,13 @@ function johnston:in_2_sobreposition(n)
 end
 
 -- ─────────────────────────────────────
-function johnston:in_3_fundamental(midicents)
-	if type(midicents) == "number" then
-		self.fundamental = midicents
-		self.fundamental_freq = self:mc2freq(midicents)
-		pd.post(string.format("johnston: fundamental set to %g mc", self.fundamental))
+function johnston:in_3_fundamental(midi)
+	if type(midi) == "number" then
+		self.fundamental = midi
+		self.fundamental_freq = self:midi2freq(midi)
+		pd.post(string.format("johnston: fundamental set to MIDI %g", self.fundamental))
 	else
-		self:error(string.format("johnston: invalid fundamental %s", tostring(midicents)))
+		self:error(string.format("johnston: invalid fundamental %s", tostring(midi)))
 	end
 end
 

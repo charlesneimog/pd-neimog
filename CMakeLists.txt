@@ -20,7 +20,7 @@ endif()
 # │               pd.cmake               │
 # ╰──────────────────────────────────────╯
 set(PDCMAKE_FILE ${CMAKE_BINARY_DIR}/pd.cmake)
-set(PDCMAKE_VERSION "v0.2.15")
+set(PDCMAKE_VERSION "v0.2.18")
 if(NOT EXISTS ${PDCMAKE_FILE})
     message(STATUS "Downloading pd.cmake")
     file(DOWNLOAD https://raw.githubusercontent.com/pure-data/pd.cmake/refs/heads/main/pd.cmake ${PDCMAKE_FILE}
@@ -150,7 +150,7 @@ pd_add_external(
 
 target_include_directories(xfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 target_include_directories(gfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
-#include_directories(${CMAKE_BINARY_DIR}/)
+# include_directories(${CMAKE_BINARY_DIR}/)
 pd_add_external(xclick~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/xclick~.cpp")
 
 set(NW_GVERB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/nw.gverb_tilde.cpp"
@@ -230,6 +230,9 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/)
 # ╰──────────────────────────────────────╯
 file(GLOB LUA_OBJECTS "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/*.pd_lua")
 pd_add_datafile(xlab "${LUA_OBJECTS}")
+pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/l.gain~-help.pd")
+pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/sieve.lua")
+pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/om_ji.lua")
 
 file(GLOB PYTHON_OBJECTS "${CMAKE_CURRENT_SOURCE_DIR}/src/python/*.pd_py")
 pd_add_datafile(xlab "${PYTHON_OBJECTS}")
