@@ -344,13 +344,13 @@ functions["ji.mos-complementary"] = function(generator, range, maximum)
 	return result
 end
 
-functions["ji.Hexany"] = function(values)
-	if #values ~= 4 then error("ji.Hexany expects exactly four identities") end
+functions["ji.hexany"] = function(values)
+	if #values ~= 4 then error("ji.hexany expects exactly four identities") end
 	return combinations(values, 2)
 end
 
-functions["ji.Hexany-triads"] = function(values)
-	if #values ~= 4 then error("ji.Hexany-triads expects exactly four identities") end
+functions["ji.hexany-triads"] = function(values)
+	if #values ~= 4 then error("ji.hexany-triads expects exactly four identities") end
 	local subharmonic, harmonic = {}, {}
 	for _, excluded in ipairs(values) do
 		for _, pair in ipairs(combinations(difference(values, { excluded }), 2)) do
@@ -365,7 +365,7 @@ functions["ji.Hexany-triads"] = function(values)
 	return { subharmonic, harmonic }
 end
 
-functions["ji.Hexany-connections"] = function(vertex, hexany)
+functions["ji.hexany-connections"] = function(vertex, hexany)
 	local result = {}
 	for _, edge in ipairs(hexany) do
 		if contains(edge, vertex[1]) or contains(edge, vertex[2]) then result[#result + 1] = edge end
@@ -525,9 +525,9 @@ local specs = {
 	["ji.mos-verify"] = { defaults = { { 1, "4/3", "16/9", 2 } }, outlets = 2 },
 	["ji.mos-check"] = { "4/3", 60, 2, 2 },
 	["ji.mos-complementary"] = { "3/2", 4, 50 },
-	["ji.Hexany"] = { { 5, 7, 13, 17 } },
-	["ji.Hexany-triads"] = { defaults = { { 1, 3, 5, 7 } }, outlets = 2 },
-	["ji.Hexany-connections"] = { { 3, 13 }, { { 3, 5 }, { 3, 13 }, { 5, 13 }, { 3, 21 }, { 5, 21 }, { 13, 21 } } },
+	["ji.hexany"] = { { 5, 7, 13, 17 } },
+	["ji.hexany-triads"] = { defaults = { { 1, 3, 5, 7 } }, outlets = 2 },
+	["ji.hexany-connections"] = { { 3, 13 }, { { 3, 5 }, { 3, 13 }, { 5, 13 }, { 3, 21 }, { 5, 21 }, { 13, 21 } } },
 	["ji.eikosany"] = { { 1, 3, 5, 7, 9, 11 } },
 	["ji.eikosany-triads"] = { defaults = { { 1, 3, 5, 7, 9, 11 } }, outlets = 2 },
 	["ji.eikosany-tetrads"] = { defaults = { { 1, 3, 5, 7, 9, 11 } }, outlets = 2 },

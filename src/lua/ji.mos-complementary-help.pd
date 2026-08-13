@@ -1,11 +1,9 @@
-#N canvas 180 80 900 540 10;
+#N canvas 0 0 925 1131 10;
 #X declare -lib xlab;
 #X obj 24 84 declare -lib xlab;
 #X msg 24 184 symbol 3/2;
 #X msg 229 184 4;
-#X msg 434 184 50;
 #X obj 24 250 ji.mos-complementary;
-#X obj 24 300 print ji.mos-complementary-1;
 #X text 24 22 ji.mos-complementary;
 #X text 24 46 Find stacking counts with complementary generator patterns.;
 #X text 24 158 inlet 1: generator;
@@ -21,7 +19,9 @@
 #X text 12 116 OUTLET_0 complementary counts;
 #X text 12 210 LIBRARY xlab;
 #X restore 700 470 pd META;
-#X connect 1 0 4 0;
-#X connect 2 0 4 1;
-#X connect 3 0 4 2;
-#X connect 4 0 5 0;
+#X obj 24 300 bhack.print;
+#X msg 434 184 400;
+#X connect 1 0 3 0;
+#X connect 2 0 3 1;
+#X connect 3 0 11 0;
+#X connect 12 0 3 2;

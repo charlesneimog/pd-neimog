@@ -2,9 +2,9 @@
 #X declare -lib xlab;
 #X obj 24 84 declare -lib xlab;
 #X msg 24 184 list 5 7 13 17;
-#X obj 24 250 ji.Hexany;
-#X obj 24 300 print ji.Hexany-1;
-#X text 24 22 ji.Hexany;
+#X obj 24 250 ji.hexany;
+#X obj 24 300 print ji.hexany-1;
+#X text 24 22 ji.hexany;
 #X text 24 46 Generate the six two-element combinations of four identities.;
 #X text 24 158 inlet 1: four identities;
 #X text 24 340 outlet 1: Hexany vertices;
