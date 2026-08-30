@@ -1,1 +1,0 @@
-pd_add_external(nw.gverb~ "${CMAKE_CURRENT_SOURCE_DIR}/nw.gverb_tilde.cpp;${CMAKE_CURRENT_SOURCE_DIR}/reverb_bb.cpp")

@@ -7,7 +7,7 @@ set(PD_BUILD_STATIC_OBJECTS OFF)
 set(POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(IAMCHARLES "Set to ON if you are Charles K. Neimog, this use local packages" OFF)
+option(IAMCHARLES "Use local checkouts for packages that are not stored in pd-xlab" OFF)
 
 # ╭──────────────────────────────────────╮
 # │                FLAGS                 │
@@ -129,7 +129,7 @@ target_include_directories(loris PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 # freeze
 pd_add_external(
     lfreeze~
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/spectral/lfreeze~.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/fft/lfreeze~.cpp"
     LINK_LIBRARIES
     loris)
 
@@ -151,15 +151,32 @@ pd_add_external(
 target_include_directories(xfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 target_include_directories(gfreeze_tilde PRIVATE ${CMAKE_BINARY_DIR}/fftw-3.3.10/api)
 # include_directories(${CMAKE_BINARY_DIR}/)
-pd_add_external(xclick~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/xclick~.cpp")
+pd_add_external(xclick~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/xclick~.cpp")
+pd_add_external(xcurve~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/xcurve~.cpp")
 
-set(NW_GVERB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/nw.gverb_tilde.cpp"
-                     "${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/reverb_bb.cpp")
+set(NW_GVERB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/reverb/nw.gverb_tilde.cpp"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/src/reverb/reverb_bb.cpp")
 pd_add_external(
     nw.gverb~
     "${NW_GVERB_SOURCES}"
     TARGET
     nw_gverb_tilde)
+
+# Synth
+cpmaddpackage("gh:schellingb/TinySoundFont#main")
+pd_add_external(tsf~ "${CMAKE_CURRENT_SOURCE_DIR}/src/synth/tsf~.cpp")
+target_include_directories(tsf_tilde PRIVATE ${TinySoundFont_SOURCE_DIR}/)
+
+# Single objects maintained as part of xlab.
+if(NOT EMSCRIPTEN)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/single/ambi~" "${CMAKE_BINARY_DIR}/single/ambi")
+endif()
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/single/pv~" "${CMAKE_BINARY_DIR}/single/pv")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/single/mar~" "${CMAKE_BINARY_DIR}/single/mar")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/single/dragonfly~" "${CMAKE_BINARY_DIR}/single/dragonfly")
+
+# Collections maintained as part of xlab.
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/mutable" "${CMAKE_BINARY_DIR}/mutable")
 
 # ╭──────────────────────────────────────╮
 # │             DDDD Package             │
@@ -180,50 +197,34 @@ message(STATUS "dddd file: ${DDDD_LUA}")
 # ╰──────────────────────────────────────╯
 
 if(IAMCHARLES)
-    add_subdirectory(../pd-ambi ${CMAKE_BINARY_DIR}/pd-ambi)
-    add_subdirectory(../pv~ ${CMAKE_BINARY_DIR}/pv~)
-    add_subdirectory(../mar_tilde ${CMAKE_BINARY_DIR}/mar_tilde)
+    # Sources that still need to be moved into pd-xlab.
     add_subdirectory(../pd-stk ${CMAKE_BINARY_DIR}/pd-stk)
-
     add_subdirectory(../pd-lua ${CMAKE_BINARY_DIR}/pd-lua)
+    add_subdirectory(../pd-orchidea ${CMAKE_BINARY_DIR}/pd-orchidea)
+
+    # Packages intentionally kept outside pd-xlab.
     add_subdirectory(../py4pd ${CMAKE_BINARY_DIR}/py4pd)
     add_subdirectory(../pd-upic ${CMAKE_BINARY_DIR}/pd-upic)
-    add_subdirectory(../pd-orchidea ${CMAKE_BINARY_DIR}/pd-orchidea)
     add_subdirectory(../pd-bhack ${CMAKE_BINARY_DIR}/pd-bhack)
-
-    # add_subdirectory(../pd-onnx ${CMAKE_BINARY_DIR}/pd-onnx)
-    add_subdirectory(../onsetsds_tilde ${CMAKE_BINARY_DIR}/onsetsds_tilde)
-    add_subdirectory(../dragonfly_tilde ${CMAKE_BINARY_DIR}/dragonfly_tilde)
-
-    add_subdirectory(../pd-saf ${CMAKE_BINARY_DIR}/pd-saf)
-    # add_subdirectory(../pd-soundtouch ${CMAKE_BINARY_DIR}/pd-soundtouch)
-else()
     if(NOT EMSCRIPTEN)
-        cpmaddpackage("gh:charlesneimog/pd-ambi#main")
-        cpmaddpackage("gh:charlesneimog/py4pd#master")
-        cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#main")
+        add_subdirectory(../p2p ${CMAKE_BINARY_DIR}/p2p)
     endif()
-
-    cpmaddpackage("gh:charlesneimog/pv_tilde#main")
-    cpmaddpackage("gh:charlesneimog/mar_tilde#main")
+else()
+    # Temporary package fallbacks until these sources are moved into pd-xlab.
     cpmaddpackage("gh:charlesneimog/pd-stk#main")
-
-    # lua
-    cpmaddpackage("gh:charlesneimog/pd-upic#main")
     cpmaddpackage("gh:charlesneimog/pd-orchidea#main")
+    cpmaddpackage("gh:charlesneimog/pd-upic#main")
     cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-bhack#main")
 
-    # single objects cpmaddpackage("gh:charlesneimog/pd-onnx#main")
-    cpmaddpackage("gh:charlesneimog/onsetsds_tilde#main")
-    cpmaddpackage("gh:charlesneimog/pd-dragonfly_tilde#main")
-
-    # saf
-    cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-saf#main")
+    # Packages intentionally kept outside pd-xlab.
+    if(NOT EMSCRIPTEN)
+        cpmaddpackage("gh:charlesneimog/py4pd#master")
+        cpmaddpackage("gh:charlesneimog/p2p#main")
+        cpmaddpackage("gh:EL-LOCUS-SOLUS/pd-lua#main")
+    endif()
 endif()
 
 target_link_libraries(xlab PRIVATE lua)
-
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/stolen/nw/)
 
 # ╭──────────────────────────────────────╮
 # │ Lua, Python Objects + Audio and Data │
@@ -268,17 +269,15 @@ add_dependencies(
     # single
     pv_tilde
     mar_tilde
-    onsetsds_tilde
     dragonfly_tilde
-    saf
-    saf.encoder_tilde
-    saf.decoder_tilde
-    saf.binaural_tilde
-    saf.roomsim_tilde
-    saf.panner_tilde)
+    # mutable
+    elements_tilde
+    rings_tilde
+    # synth
+    tsf_tilde)
 
 if(NOT EMSCRIPTEN)
-    add_dependencies(edit_files py4pd)
+    add_dependencies(edit_files ambi_tilde py4pd)
 endif()
 
 add_dependencies(xlab edit_files)

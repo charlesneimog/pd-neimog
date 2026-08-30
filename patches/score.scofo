@@ -1,0 +1,32 @@
+BPM 100
+ONNXMODEL t-phonemes.onnx
+ONNXDESCRIPTORS mfcc logmel centroid flatness hfr flux zcr irregularity kurtosis
+
+// measure 1
+UTECH tsi 1
+UTECH tum 1
+UTECH ti 1
+REST 1
+
+// measure 2
+UTECH tsi 0.5
+UTECH tum 0.5
+UTECH ti 1
+REST 2
+
+// measure 3
+UTECH ta 1
+REST 2.5
+UTECH ta 0.5
+
+// measure 4
+UTECH ta 1
+REST 3
+
+// measure 5
+UTECH tsi 0.5
+UTECH tum 0.5
+UTECH ti 1
+UTECH ta 1
+REST 1
+
