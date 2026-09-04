@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(xlab)
+project(xlab LANGUAGES CXX C)
 
 # ──────────────────────────────────────
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
@@ -105,6 +105,9 @@ pd_add_external(a.sum "${CMAKE_CURRENT_SOURCE_DIR}/src/arrays/a.sum.cpp")
 # manipulations
 pd_add_external(infinite.record~ "${CMAKE_CURRENT_SOURCE_DIR}/src/utilities/infinite.record.cpp")
 pd_add_external(fdn~ "${CMAKE_CURRENT_SOURCE_DIR}/src/reverb/fdn~.cpp")
+pd_add_external(besseldrum~ "${CMAKE_CURRENT_SOURCE_DIR}/src/lab/besseldrum~.cpp")
+set_target_properties(besseldrum_tilde PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON
+                                                  CXX_EXTENSIONS OFF)
 
 cpmaddpackage("gh:PelleJuul/zita-rev1#master")
 
@@ -178,6 +181,11 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/single/dragonfly~" "${CMAKE_BI
 # Collections maintained as part of xlab.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/mutable" "${CMAKE_BINARY_DIR}/mutable")
 
+if(NOT TARGET onsetsds_tilde)
+    pd_add_external(onsetsds~
+                    "${CMAKE_CURRENT_SOURCE_DIR}/src/mir/onsetsds.c;${CMAKE_CURRENT_SOURCE_DIR}/src/mir/onsetsds~.c")
+endif()
+
 # ╭──────────────────────────────────────╮
 # │             DDDD Package             │
 # ╰──────────────────────────────────────╯
@@ -234,6 +242,7 @@ pd_add_datafile(xlab "${LUA_OBJECTS}")
 file(GLOB JI_HELP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/ji*-help.pd")
 pd_add_datafile(xlab "${JI_HELP_FILES}")
 pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/l.gain~-help.pd")
+pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/rhythm-help.pd")
 pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/sieve.lua")
 pd_add_datafile(xlab "${CMAKE_CURRENT_SOURCE_DIR}/src/lua/om_ji.lua")
 
@@ -270,6 +279,7 @@ add_dependencies(
     pv_tilde
     mar_tilde
     dragonfly_tilde
+    besseldrum_tilde
     # mutable
     elements_tilde
     rings_tilde
